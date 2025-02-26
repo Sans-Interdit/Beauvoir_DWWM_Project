@@ -1,3 +1,26 @@
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('http://localhost:5000/results', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        let chatBox = document.getElementById("reco-box");
+
+        const data = await response.json(); 
+        for (const work of data) {
+            let userMessage = document.createElement("div");
+            userMessage.classList.add("message", "user");
+            userMessage.textContent = work.title;
+            chatBox.appendChild(userMessage);
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        return 400;
+    }
+});  
+
 document.getElementById("user-input").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
         sendMessage();
