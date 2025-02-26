@@ -4,26 +4,42 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f4f4;
+    background-color: #1a1a1a;
+    margin: 0;
+}
+
+#histo-box {
+    margin-left: 10px;
+    margin-right: 2%;
+    height: 90%;
+    width: 20%;
+    background: #403B36;
+    padding: 2%;
+    border-radius: 3%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .chat-container {
-    width: 350px;
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
+    height: 90%;
+    width: 50%;
+    background: #403B36;
+    padding: 2%;
+    border-radius: 3%;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
 }
 
 #chat-box {
-    height: 300px;
+    height: 100%;
     overflow-y: auto;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
+    border-bottom: 3px solid #A259FF;
+    padding-bottom: 5%;
     display: flex;
     flex-direction: column;
+    padding: 2%;
 }
 
 .message {
@@ -34,36 +50,74 @@ body {
 }
 
 .bot {
-    background: #e1ffc7;
+    background: #A259FF;
+    color: #FFFFFF;
     align-self: flex-start;
 }
 
 .user {
-    background: #c7e1ff;
+    background: #FF9F1C;
+    color: #FFFFFF;
     align-self: flex-end;
     text-align: right;
 }
 
 input {
     width: 90%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
+    padding: 3%;
+    margin-top: 3%;
+    border: 2px solid #A259FF;
     border-radius: 5px;
     align-self: center;
+    background-color: #1a1a1a;
+    color: white;
 }
 
 button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
+    width: 9%;
+    margin-top: 3%;
+    margin-left: 2%;
+    border: 1px solid #A259FF;
     border-radius: 5px;
     align-self: center;
-}
-
-button {
-    background: #28a745;
+    background: #FF9F1C;
     color: white;
     cursor: pointer;
+    aspect-ratio: 1;
+}
+
+#sendbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#reco-box {
+    margin-right: 10px;
+    margin-left: 2%;
+    height: 90%;
+    width: 30%;
+    background: #403B36;
+    padding: 2%;
+    border-radius: 3%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* Personnalisation de la barre de défilement */
+::-webkit-scrollbar {
+    width: 5px; /* Largeur de la scrollbar */
+}
+
+/* Personnalisation de la partie déplaçable de la scrollbar (thumb) */
+::-webkit-scrollbar-thumb {
+    background-color: #FF9F1C; /* Couleur du thumb */
+    border-radius: 10px; /* Bord arrondi */
+}
+
+/* Personnalisation de la piste de la scrollbar */
+::-webkit-scrollbar-track {
+    background: #f1f1f100; /* Couleur de la piste */
 }
