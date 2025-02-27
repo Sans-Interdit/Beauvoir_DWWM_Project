@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const data = await response.json(); 
         for (const work of data) {
             let userMessage = document.createElement("div");
-            userMessage.classList.add("message", "user");
+            userMessage.classList.add("reco");
             userMessage.textContent = work.title;
             chatBox.appendChild(userMessage);
         }

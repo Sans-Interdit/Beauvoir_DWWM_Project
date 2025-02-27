@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
-import os
 from flask_cors import CORS
 import ollama
 import json
+from .llm_calls import determine_prompt_type, determine_criterias
+import random
 
 app = Flask("Beauvoir_DWWM_Project")
 CORS(app)
@@ -16,21 +17,33 @@ def chat():
     if api_key_send != "W8Su3FyPlm6PxqEnfb6pcKLP3RnonEHH":
         return jsonify({"error": "Unauthorized access"}), 401
     
-    prompt = [{"role":"user", "content": request.json.get("message")}]
+    prompt = {"role":"user", "content": request.json.get("message")}
 
+    is_about_reco = determine_prompt_type(prompt).lower() == "oui"
+
+    if is_about_reco:
+        criterias = determine_criterias(prompt)
+        try:
+            criterias = json.loads(criterias)
+        except json.JSONDecodeError:
+            return jsonify({"error": "Error in determine_criterias. Invalid JSON format"}), 400
+
+        
+                
     response = ollama.chat(
         model="french_qwen",
         stream=False,
-        messages=prompt,
+        messages=[prompt],
         options={"temperature": 0.3}
     )
-    print(response["message"])
+
     return jsonify({"message": response["message"]["content"]}), 200
 
 @app.route("/results", methods=["GET"])
 def getWorks():
     with open("anime_data.json", "r", encoding="utf-8") as json_file:
-        anime_dict = json_file.read()
-        anime_dict = json.loads(anime_dict)
-    print(anime_dict[:10])
-    return jsonify(anime_dict[:20]), 200
+        anime_dict = json.load(json_file)
+
+    random.shuffle(anime_dict)  # Mélange la liste
+
+    return jsonify(anime_dict), 200
