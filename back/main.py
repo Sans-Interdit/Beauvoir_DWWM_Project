@@ -4,6 +4,7 @@ import ollama
 import json
 from .llm_calls import determine_prompt_type, determine_criterias
 import random
+from models.Account import Account
 
 app = Flask("Beauvoir_DWWM_Project")
 CORS(app)
@@ -27,11 +28,11 @@ def chat():
             criterias = json.loads(criterias)
         except json.JSONDecodeError:
             return jsonify({"error": "Error in determine_criterias. Invalid JSON format"}), 400
-
         
-                
+
+
     response = ollama.chat(
-        model="french_qwen",
+        model="DWWM",
         stream=False,
         messages=[prompt],
         options={"temperature": 0.3}
