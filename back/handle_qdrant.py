@@ -1,17 +1,8 @@
 import json
-from sentence_transformers import SentenceTransformer
-from qdrant_client import QdrantClient, models
+from qdrant_client import models
 import numpy as np
-
-CLIENT_CONFIG = {
-    "url": "http://localhost:6333",
-    "api_key": "test",
-}
-
-model = SentenceTransformer('all-MiniLM-L6-v2')
-client = QdrantClient(**CLIENT_CONFIG)
-COLLECTION_NAME = "test"
-
+from .recommend import client, COLLECTION_NAME, model
+import csv
 
 def create_collection():
     if client.collection_exists(COLLECTION_NAME):
@@ -25,7 +16,7 @@ def create_collection():
     vector_size = model.get_sentence_embedding_dimension()
     vector_names = [
         "title",
-        "alternativeTitles",
+        # "alternativeTitles",
         "synopsis",
         ]
 
@@ -41,36 +32,43 @@ def create_collection():
     )
 
 def encode_work(work):
-    altTitle = work["alternativeTitles"]
+    # altTitle = work.get("alternativeTitles")
+    # if altTitle:
+    #     altTitle = altTitle.split(", ")
+    #     altTitle.append(work["title"])
+    #     vectors = {
+    #         "title": np.average([model.encode(title) for title in altTitle], axis=0).tolist(),
+    #         "synopsis": model.encode(work["synopsis"]),
+    #     }
+
     vectors = {
         "title": model.encode(work["title"]),
-        "alternativeTitles": (
-            np.average([model.encode(title) for title in altTitle], axis=0).tolist()
-            if altTitle else np.zeros(model.encode(work["title"]).shape).tolist()
-        ),
         "synopsis": model.encode(work["synopsis"]),
     }
 
     return models.PointStruct(
-        id=int(work["_id"]),
+        id=int(work["id"]),
         payload=work,
         vector=vectors,
     )
 
+
 if __name__ == "__main__":
     # create_collection()
 
-
-    with open("anime_data.json", "r", encoding="utf-8") as json_file:
-        works_list = json.load(json_file)
+    with open("film.csv", mode="r", encoding="utf-8") as file:
+        film_liste = list(csv.DictReader(file))
+    # with open("film_data.json", "r", encoding="utf-8") as json_file:
+    #     works_list = json.load(json_file)
+    film_liste = film_liste[:len(film_liste) // 2]
 
     start = 0
-    end = len(works_list)
+    end = len(film_liste)
     step = 100
 
     for i in range(start, end, step):
-        batch = works_list[i : i + step]
-        print(f"Uploading batch {i // step} of {len(works_list) // step}")
+        batch = film_liste[i : i + step]
+        print(f"Uploading batch {i // step} of {len(film_liste) // step}")
         points = []
         for work in batch:
             p = encode_work(work)  # Mise à jour explicite de p

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Simple</title>
+    <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+    <div id="histo-box"></div>
+    <div class="chat-container">
+        <div class="menu-container">
+            <button id="optionButton" onclick="toggleMenu()">Menu</button>
+            <div class="menu" id = "menu">
+                <a href="login.html">Log in</a>
+                <a href="#">Change IA</a>
+            </div>
+        </div>
+        <div id="chat-box">
+            <div class="message user">Bonjour ! Comment puis-je vous aider ?</div>
+    </div>
+        <div id="sendbox">
+            <input type="text" id="user-input" placeholder="Écrivez un message...">
+            <button id="sendButton" onclick="sendMessage()">✓</button>
+        </div>
+    </div>
+    <div id="reco-box"></div>
+    <script src="../services/chat.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -15,35 +15,28 @@ class Account(Base):
     id_account = Column(Integer, primary_key=True)
     email = Column(String)
     password = Column(String)
-    
-    # Relationships
-    conversations = relationship("Conversation", secondary="message", back_populates="accounts")
-    sent_messages = relationship("Message", foreign_keys="Message.from_user", back_populates="sender")
-    received_messages = relationship("Message", back_populates="receiver")
+    preference = Column(JSON)
+
+    conversations = relationship("Conversation", back_populates="account", cascade="all, delete-orphan")
 
 class Conversation(Base):
     __tablename__ = 'conversation'
     
     id_conversation = Column(Integer, primary_key=True)
     name = Column(String)
-    
-    # Relationships
-    messages = relationship("Message", back_populates="conversation")
-    accounts = relationship("Account", secondary="message", back_populates="conversations")
+
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
+    account = relationship("Account", back_populates="conversations")
 
 class Message(Base):
     __tablename__ = 'message'
     
     id_message = Column(Integer, primary_key=True)
-    from_user = Column(Integer, ForeignKey('account.id_account'))
-    to_account = Column(Integer, ForeignKey('account.id_account'))
     conversation_id = Column(Integer, ForeignKey('conversation.id_conversation'))
     content = Column(String)
-    
-    # Relationships
-    sender = relationship("Account", foreign_keys=[from_user], back_populates="sent_messages")
-    receiver = relationship("Account", foreign_keys=[to_account], back_populates="received_messages")
+
     conversation = relationship("Conversation", back_populates="messages")
+
 
 # Create engine instance
 engine = create_engine(DATABASE_URL)
