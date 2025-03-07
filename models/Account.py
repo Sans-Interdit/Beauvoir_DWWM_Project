@@ -24,6 +24,7 @@ class Conversation(Base):
     
     id_conversation = Column(Integer, primary_key=True)
     name = Column(String)
+    account_id = Column(Integer, ForeignKey('account.id_account'))
 
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
     account = relationship("Account", back_populates="conversations")
@@ -44,12 +45,5 @@ engine = create_engine(DATABASE_URL)
 # Create tables in the database
 Base.metadata.create_all(engine)
 
-# Check if tables exist
-from sqlalchemy import inspect
-inspector = inspect(engine)
-
-# for table in ['account', 'conversation', 'message']:
-#     if table in inspector.get_table_names():
-#         print(f"Table '{table}' exists.")
-#     else:
-#         print(f"Table '{table}' doesn't exist.")
+Session = sessionmaker(bind=engine)
+session = Session()

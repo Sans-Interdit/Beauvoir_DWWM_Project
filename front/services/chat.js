@@ -68,8 +68,8 @@ async function getBotResponse(input) {
         const response = await fetch('http://localhost:5000/chat', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',  // Définir le type du contenu
-                'X-API-KEY': 'W8Su3FyPlm6PxqEnfb6pcKLP3RnonEHH', // Si tu utilises un token d'authentification
+                'Content-Type': 'application/json',
+                'X-API-KEY': CONFIG.API_KEY,
             },
             body: JSON.stringify({
                 message: input,
@@ -77,11 +77,11 @@ async function getBotResponse(input) {
             mode: "cors"
         });
         
-        const data = await response.json();  // Convertir la réponse en JSON
-        return data;  // Retourner le message du bot
+        const data = await response.json();
+        return data;
     } catch (error) {
-        console.error('Erreur:', error);  // Gestion des erreurs
-        return "Erreur dans la réponse du bot";  // Message d'erreur par défaut
+        console.error('Erreur:', error);
+        return "Erreur dans la réponse du bot";
     }
 }
 

@@ -5,170 +5,36 @@ body {
     align-items: center;
     height: 100vh;
     background-color: #1a1a1a;
-    margin: 0;
 }
-
-#histo-box {
-    margin-left: 10px;
-    margin-right: 2%;
-    height: 90%;
-    width: 20%;
+.container {
     background: #403B36;
-    padding: 2%;
-    border-radius: 3%;
+    padding: 20px;
+    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-}
-
-.chat-container {
-    height: 90%;
-    width: 50%;
-    background: #403B36;
-    padding: 2%;
-    border-radius: 3%;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-}
-
-#chat-box {
-    height: 100%;
-    overflow-y: auto;
-    border-bottom: 3px solid #A259FF;
-    padding-bottom: 5%;
-    display: flex;
-    flex-direction: column;
-    padding: 2%;
-}
-
-.message {
-    padding: 8px;
-    border-radius: 5px;
-    margin: 5px 0;
-    max-width: 80%;
-}
-
-.bot {
-    background: #A259FF;
-    color: #FFFFFF;
-    align-self: flex-start;
-}
-
-.user {
-    background: #FF9F1C;
-    color: #FFFFFF;
-    align-self: flex-end;
-    text-align: right;
-}
-
-input {
-    width: 90%;
-    padding: 3%;
-    margin-top: 3%;
-    border: 2px solid #A259FF;
-    border-radius: 5px;
-    align-self: center;
-    background-color: #1a1a1a;
-    color: white;
-}
-
-#sendButton {
-    width: 9%;
-    margin-top: 3%;
-    margin-left: 2%;
-    font-size: 30px;
-    border: 1px solid #A259FF;
-    border-radius: 5px;
-    align-self: center;
-    background: #FF9F1C;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
-    aspect-ratio: 1;
-}
-
-#sendbox {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#reco-box {
-    margin-right: 10px;
-    margin-left: 2%;
-    height: 90%;
-    width: 30%;
-    background: #403B36;
-    padding: 2%;
-    border-radius: 3%;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-
-.reco {
-    padding: 8px;
-    border-radius: 5px;
-    margin: 5px 0;
-    width: 80%;
-    background: #A259FF;
-    color: #FFFFFF;
-    align-self: center;
+    width: 300px;
     text-align: center;
 }
-
-/* Personnalisation de la barre de défilement */
-::-webkit-scrollbar {
-    width: 5px; /* Largeur de la scrollbar */
-}
-
-/* Personnalisation de la partie déplaçable de la scrollbar (thumb) */
-::-webkit-scrollbar-thumb {
-    background-color: #FF9F1C; /* Couleur du thumb */
-    border-radius: 10px; /* Bord arrondi */
-}
-
-/* Personnalisation de la piste de la scrollbar */
-::-webkit-scrollbar-track {
-    background: #f1f1f100; /* Couleur de la piste */
-}
-
-
-.menu-container {
-    position: fixed; 
-}
-
-.menu {
-    position: flex; /* Position indépendante de tout */
-    background-color: #FF9F1C;
-    min-width: 150px;
-    border: 3px solid #A259FF;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    display: none; /* Caché par défaut */
-}
-
-.menu a {
-    display: block;
-    padding: 8px;
-    text-decoration: none;
-    color: black;
-    border-bottom: 1px solid #A259FF;
-}
-
-.menu a:hover {
-    background-color: #A259FF;
-}
-
-.show {
-    display: block;
-}
-
-#optionButton {
-    background-color: #FF9F1C;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
     border-radius: 5px;
 }
+button {
+    width: 100%;
+    padding: 10px;
+    background: blue;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.toggle {
+    margin-top: 10px;
+    color: blue;
+    cursor: pointer;
+}
+#confirm-password {
+    display: none;
+}	

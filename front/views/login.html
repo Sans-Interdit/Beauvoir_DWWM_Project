@@ -4,45 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion & Inscription</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background: blue;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .toggle {
-            margin-top: 10px;
-            color: blue;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="login.css">
 </head>
 <body>
     <div class="container">
@@ -50,31 +12,12 @@
         <form id="auth-form">
             <input type="email" id="email" placeholder="Email" required>
             <input type="password" id="password" placeholder="Mot de passe" required>
-            <input type="password" id="confirm-password" placeholder="Confirmer le mot de passe" style="display: none;">
+            <input type="password" id="confirm-password" placeholder="Confirmer le mot de passe">
             <button type="submit">Se connecter</button>
         </form>
         <p class="toggle" id="toggle-form">Pas encore inscrit ? S'inscrire</p>
     </div>
-
-    <script>
-        document.getElementById("toggle-form").addEventListener("click", function() {
-            const title = document.getElementById("form-title");
-            const form = document.getElementById("auth-form");
-            const confirmPassword = document.getElementById("confirm-password");
-            const button = form.querySelector("button");
-
-            if (title.textContent === "Connexion") {
-                title.textContent = "Inscription";
-                confirmPassword.style.display = "block";
-                button.textContent = "S'inscrire";
-                this.textContent = "Déjà inscrit ? Se connecter";
-            } else {
-                title.textContent = "Connexion";
-                confirmPassword.style.display = "none";
-                button.textContent = "Se connecter";
-                this.textContent = "Pas encore inscrit ? S'inscrire";
-            }
-        });
-    </script>
+    <script src="../services/config.js"></script>
+    <script src="../services/login.js"></script>
 </body>
 </html>

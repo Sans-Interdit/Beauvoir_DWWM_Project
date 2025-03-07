@@ -3,6 +3,11 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import random
 import json
+import torch
+print(torch.__version__)
+print(torch.version.cuda)  # Doit afficher une version (ex: "11.8"), sinon CUDA n'est pas dispo.
+
+
 
 client = QdrantClient(
     url="http://localhost:6333",
@@ -10,7 +15,11 @@ client = QdrantClient(
 )
 COLLECTION_NAME = "works"
 model = SentenceTransformer('all-MiniLM-L6-v2')
-
+if torch.cuda.is_available():
+    total_memory = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)  # En Go
+    print(f"VRAM disponible : {total_memory:.2f} Go")
+else:
+    print("non")
 
 def searchWorks(criterias):
     prefetch = create_prefetch(criterias)
