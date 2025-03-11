@@ -8,9 +8,9 @@ from .recommend import searchWorks
 import os
 from dotenv import load_dotenv
 import jwt
-from werkzeug.security import check_password_hash
 import bcrypt
 import datetime
+from functools import wraps
 
 load_dotenv()
 
@@ -61,16 +61,65 @@ def login():
     email = request.json.get("email")
     password = request.json.get("password")
 
-    account = session.query(Account).filter_by(email=email, password=password).first()
-
-    if account and bcrypt.checkpw(password.encode('utf-8'), account['password']):
-        payload = {
-            'user_id': account['id'],
-            'username': account['username'],
-            'exp': datetime.datetime.now() + datetime.timedelta(hours=1)
-        }
-        
-        token = jwt.encode(payload, os.getenv("CRYPT_KEY"), algorithm='HS256')
-        return jsonify({"token": token}), 200
+    password_hashed = password.encode('utf-8')
+    account = session.query(Account).filter_by(email=email).first()
+    if account and bcrypt.checkpw(password_hashed, account.password.encode('utf-8')):
+        return get_logged(account)
     else:
         return jsonify({"error": "Invalid credentials"}), 401
+    
+def get_logged(account):
+    payload = {
+        'id': account.id_account,
+        'email': account.email,
+        'exp': datetime.datetime.now() + datetime.timedelta(hours=1)
+    }
+    
+    token = jwt.encode(payload, os.getenv("CRYPT_KEY"), algorithm='HS256')
+    print(token)
+    return jsonify({"token": token}), 200
+
+@app.route("/register", methods=["POST"])
+def register():
+    email = request.json.get("email")
+    password = request.json.get('password')
+
+    account = session.query(Account).filter_by(email=email).first()
+    if account:
+        return jsonify({"message": "Email already used"}), 400
+
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    new_account = Account(email=email, password=hashed_password)
+    session.add(new_account)
+    session.commit()
+
+    return get_logged(new_account)
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get("Authorisation")
+        print(token)
+        if not token:
+            return jsonify({"error": "Token is missing"}), 401
+        
+        try:
+            # token = token.split("Bearer ")[1]  # Suppression du préfixe "Bearer "
+            data = jwt.decode(token, os.getenv("CRYPT_KEY"), algorithms=["HS256"])
+            request.user_id = data["id"]
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token has expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+
+        return f(*args, **kwargs)
+
+    return decorated
+
+@app.route("/historic", methods=["POST"])
+@token_required
+def historic():
+    account = session.query(Account).filter_by(id_account=request.user_id).first()
+    print(account.conversations)
+    return jsonify({"error": "Token is missing"}), 200

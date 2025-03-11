@@ -18,7 +18,7 @@ document.getElementById("toggle-form").addEventListener("click", function() {
 });
 
 document.getElementById("auth-form").addEventListener("submit", function(event) {
-    event.preventDefault(); // Empêche le rechargement de la page
+    event.preventDefault();
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
@@ -41,12 +41,19 @@ document.getElementById("auth-form").addEventListener("submit", function(event) 
         body: JSON.stringify(formData)
     })
     .then(response => {
-        if (response.status==200) {
-            window.location.href = "chat.html";
+        if (response.status === 200 || response.status === 201) {
+            return response.json()
+        } else {
+            alert(isRegistering ? `Échec de l'inscription : ${response}` : `Échec de la connexion : ${response}`);
         }
-        else {
-            alert(isRegistering ? "Échec de l'inscription" : "Échec de la connexion");
+    })
+    .then(response => {
+        // Sauvegarder le token dans le localStorage
+        if (response.token) {
+            console.log(response.token)
+            localStorage.setItem("authToken", response.token);
         }
+        window.location.href = "chat.html";
     })
     .catch(error => {
         console.error("Erreur :", error);

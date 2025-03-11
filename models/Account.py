@@ -24,7 +24,7 @@ class Conversation(Base):
     
     id_conversation = Column(Integer, primary_key=True)
     name = Column(String)
-    account_id = Column(Integer, ForeignKey('account.id_account'))
+    id_account = Column(Integer, ForeignKey('account.id_account'))
 
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
     account = relationship("Account", back_populates="conversations")
@@ -33,7 +33,7 @@ class Message(Base):
     __tablename__ = 'message'
     
     id_message = Column(Integer, primary_key=True)
-    conversation_id = Column(Integer, ForeignKey('conversation.id_conversation'))
+    id_conversation = Column(Integer, ForeignKey('conversation.id_conversation'))
     content = Column(String)
 
     conversation = relationship("Conversation", back_populates="messages")

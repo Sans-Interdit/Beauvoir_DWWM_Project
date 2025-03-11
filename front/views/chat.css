@@ -1,9 +1,9 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
-    justify-content: center;
     align-items: center;
     height: 100vh;
+    width: 100%;
     background-color: #1a1a1a;
     margin: 0;
 }
@@ -62,7 +62,7 @@ body {
     text-align: right;
 }
 
-input {
+#user-input {
     width: 90%;
     padding: 3%;
     margin-top: 3%;
@@ -165,6 +165,7 @@ input {
 }
 
 #optionButton {
+    position: fixed;
     background-color: #FF9F1C;
     color: white;
     border: none;
@@ -172,3 +173,74 @@ input {
     cursor: pointer;
     border-radius: 5px;
 }
+
+.sidebar {
+    width: 33%;
+    height: 100vh;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 6%;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 1;
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+  /* La barre est cachée (hors écran) lorsqu'elle a la classe "closed" */
+.sidebar.closed {
+    transform: translateX(-100%);
+}
+  /* Bouton pour ouvrir/fermer la barre */
+.menu-button {
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 18px;
+    margin-bottom: 10%;
+    margin-top: 10%;
+    width: 60%;
+}
+
+#buttons-box {
+    flex-direction: column;
+    display: flex;
+    height: 100%;
+    width: 6%;
+    z-index: 2;
+    margin-right: 2%;
+    background-color: #333;
+    align-items: center;
+}
+
+.input-login {
+    width: 70%;
+    padding: 10px;
+    margin: 5%;
+    border: 1px solid #FF9F1C;
+    border-radius: 5px;
+}
+
+.button-login {
+    width: 40%;
+    padding: 10px;
+    background: #FF9F1C;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.toggle {
+    margin-top: 10px;
+    color: blue;
+    cursor: pointer;
+}
+#confirm-password {
+    display: none;
+}	

@@ -1,6 +1,4 @@
-import json
 from qdrant_client import models
-import numpy as np
 from .recommend import client, COLLECTION_NAME, model
 import csv
 
@@ -16,7 +14,6 @@ def create_collection():
     vector_size = model.get_sentence_embedding_dimension()
     vector_names = [
         "title",
-        # "alternativeTitles",
         "synopsis",
         ]
 
@@ -31,26 +28,26 @@ def create_collection():
         },
     )
 
-def encode_work(work):
-    # altTitle = work.get("alternativeTitles")
-    # if altTitle:
-    #     altTitle = altTitle.split(", ")
-    #     altTitle.append(work["title"])
-    #     vectors = {
-    #         "title": np.average([model.encode(title) for title in altTitle], axis=0).tolist(),
-    #         "synopsis": model.encode(work["synopsis"]),
-    #     }
+def encode_works(works):
+    titles = [work["title"] for work in works]
+    synopses = [work["synopsis"] for work in works]
 
-    vectors = {
-        "title": model.encode(work["title"]),
-        "synopsis": model.encode(work["synopsis"]),
-    }
+    # Encodage par lot (batch processing)
+    encoded_titles = model.encode(titles, batch_size=32, device='cuda', convert_to_numpy=True)
+    encoded_synopses = model.encode(synopses, batch_size=32, device='cuda', convert_to_numpy=True)
 
-    return models.PointStruct(
-        id=int(work["id"]),
-        payload=work,
-        vector=vectors,
-    )
+    # Construction des objets PointStruct
+    encoded_works = [
+        models.PointStruct(
+            id=int(work["id"]),
+            payload=work,
+            vector={"title": encoded_titles[i], "synopsis": encoded_synopses[i]},
+        )
+        for i, work in enumerate(works)
+    ]
+
+    return encoded_works
+
 
 
 if __name__ == "__main__":
@@ -64,15 +61,12 @@ if __name__ == "__main__":
 
     start = 0
     end = len(film_liste)
-    step = 100
+    step = 1000
 
     for i in range(start, end, step):
         batch = film_liste[i : i + step]
         print(f"Uploading batch {i // step} of {len(film_liste) // step}")
-        points = []
-        for work in batch:
-            p = encode_work(work)  # Mise à jour explicite de p
-            points.append(p)
+        points = encode_works(batch)
         print(f"Uploading {len(points)} points")
         try:
             response = client.upload_points(collection_name=COLLECTION_NAME, points=points)

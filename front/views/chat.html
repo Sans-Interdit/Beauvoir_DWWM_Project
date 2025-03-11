@@ -7,7 +7,25 @@
     <link rel="stylesheet" href="chat.css">
 </head>
 <body>
-    <div id="histo-box"></div>
+    <div id="buttons-box">
+        <button class="menu-button" id="login-button">&#9776;</button>
+        <button class="menu-button" id="">&#9776;</button>
+        <button class="menu-button" id="">&#9776;</button>
+        <button class="menu-button" id="">&#9776;</button>
+        <button class="menu-button" id="">&#9776;</button>
+        <button class="menu-button" id="">&#9776;</button>
+    </div>
+    <div class="sidebar closed" id="sidebar-login">
+        <h2 id="form-title">Connexion</h2>
+        <form id="auth-form">
+            <input type="email" id="email" placeholder="Email" class="input-login" required>
+            <input type="password" id="password" placeholder="Mot de passe" class="input-login" required>
+            <input type="password" id="confirm-password" class="input-login" placeholder="Confirmer le mot de passe">
+            <button type="submit" class="button-login">Se connecter</button>
+        </form>
+        <p class="toggle" id="toggle-form">Pas encore inscrit ? S'inscrire</p>
+    </div>
+    <!-- <div id="histo-box"></div> -->
     <div class="chat-container">
         <div class="menu-container">
             <button id="optionButton" onclick="toggleMenu()">Menu</button>
@@ -17,14 +35,15 @@
             </div>
         </div>
         <div id="chat-box">
-            <div class="message user">Bonjour ! Comment puis-je vous aider ?</div>
-    </div>
+            <div class="message bot">Bonjour, comment puis-je vous aider aujourd'hui?</div>
+        </div>
         <div id="sendbox">
             <input type="text" id="user-input" placeholder="Écrivez un message...">
             <button id="sendButton" onclick="sendMessage()">✓</button>
         </div>
     </div>
     <div id="reco-box"></div>
+    <script src="../services/config.js"></script>
     <script src="../services/chat.js"></script>
 </body>
 </html>
