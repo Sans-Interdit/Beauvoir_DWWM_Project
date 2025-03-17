@@ -1,19 +1,11 @@
 from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
-import numpy as np
-import random
-import json
-import torch
-print(torch.__version__)
-print(torch.version.cuda)  # Doit afficher une version (ex: "11.8"), sinon CUDA n'est pas dispo.
-
-
 
 client = QdrantClient(
     url="http://localhost:6333",
     api_key= "test",
 )
-COLLECTION_NAME = "works"
+COLLECTION_NAME = "all-works"
 model = SentenceTransformer('all-MiniLM-L6-v2')
 model.to('cuda')
 

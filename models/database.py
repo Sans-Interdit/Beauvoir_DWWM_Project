@@ -84,16 +84,50 @@ import json
 #     json.dump(film_list, json_file, ensure_ascii=False, indent=4)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import pandas as pd
+
+# df = pd.read_csv("models/film_original.csv", sep=",", quotechar='"', quoting=1)
+
+# # Garder uniquement les lignes où 'adult' est False
+# df = df[df["adult"] == False]
+
+# df["format"] = "movie"
+
+# # Supprimer les colonnes inutiles
+# df = df.drop(columns=["adult", "vote_count", "revenue", "backdrop_path", "budget", "homepage", "imdb_id", "original_language", "popularity", "poster_path", "production_countries", "spoken_languages"])
+
+# # Renommer la colonne
+# df = df.rename(columns={"overview": "synopsis"})
+
+# # Sauvegarder le fichier nettoyé
+# df.to_csv("models/film.csv", index=False, sep=",", quotechar='"', quoting=1)
+
+
+
+
+ 
+
+
 import pandas as pd
 
-df = pd.read_csv("film_original.csv", sep=",", quotechar='"', quoting=1)
+df = pd.read_csv("models/anime.csv", sep=",", quotechar='"', quoting=1)
 
-df = df.drop(columns=["adult", "vote_count", "revenue", "backdrop_path", "budget","homepage","imdb_id","original_language","popularity","poster_path","production_countries","spoken_languages"])
+df["format"] = "anime"
 
-df = df.rename(columns={
-    "overview": "synopsis",
-})
-
-df.to_csv("film.csv", index=False, sep=",", quotechar='"', quoting=1)
-
-print("CSV nettoyé et enregistré sous 'output_clean.csv'.")
+# Sauvegarder le fichier nettoyé
+df.to_csv("models/anime.csv", index=False, sep=",", quotechar='"', quoting=1)

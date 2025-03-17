@@ -2,13 +2,10 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
-# Database connection
 DATABASE_URL = "postgresql://postgres:test@127.0.0.1:5432/postgres"
 
-# Create Base instance
 Base = declarative_base()
 
-# Define models according to the ERD
 class Account(Base):
     __tablename__ = 'account'
     
@@ -25,9 +22,16 @@ class Conversation(Base):
     id_conversation = Column(Integer, primary_key=True)
     name = Column(String)
     id_account = Column(Integer, ForeignKey('account.id_account'))
+    recommendations = Column(JSON)
 
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
     account = relationship("Account", back_populates="conversations")
+
+    def to_dict(self):
+        data = {column.name: getattr(self, column.name) for column in self.__table__.columns}
+        data["messages"] = [message.to_dict() for message in self.messages]
+        return data
+
 
 class Message(Base):
     __tablename__ = 'message'
@@ -38,11 +42,11 @@ class Message(Base):
 
     conversation = relationship("Conversation", back_populates="messages")
 
+    def to_dict(self):
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
-# Create engine instance
 engine = create_engine(DATABASE_URL)
 
-# Create tables in the database
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)

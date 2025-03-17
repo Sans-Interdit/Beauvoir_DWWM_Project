@@ -1,4 +1,7 @@
 venv
 __pycache__
-film.csv
 back/.env
+film_original.csv
+film.csv
+anime.csv
+assets

@@ -1,20 +1,156 @@
+const sidebar_login = document.getElementById('sidebar-login');
+const sidebar_histo = document.getElementById('sidebar-histo');
+const sidebar_CGU = document.getElementById('sidebar-CGU');
+const sidebar_info = document.getElementById('sidebar-info');
+const button_box = document.getElementById("buttons-box")
+let recoBox = document.getElementById("reco-box");
+
 document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        console.log(localStorage.getItem("authToken"))
-        const response = await fetch('http://localhost:5000/historic', {
+    const token = localStorage.getItem("authToken")
+
+    if (token) {
+        const profile_button = document.createElement("button");
+        profile_button.classList.add("menu-button");
+        profile_button.id = "profile-button";
+        profile_button.innerHTML = '<img src="../../assets/power-off.png" alt="History" width="50" draggable="false">';
+        profile_button.addEventListener("click", () => {
+            disconnect();
+        });
+        button_box.appendChild(profile_button)
+
+        const histo_button = document.createElement("button");
+        histo_button.classList.add("menu-button");
+        histo_button.id = "histo-button";
+        histo_button.innerHTML = '<img src="../../assets/speech-bubble.png" alt="History" width="50" draggable="false">';
+        histo_button.addEventListener("click", () => {
+            sidebar_histo.classList.toggle('closed');
+        });        
+        button_box.appendChild(histo_button)
+
+        fetch('http://localhost:5000/historic', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-API-KEY': CONFIG.API_KEY,
-                'Authorisation': localStorage.getItem("authToken")
+                'Authorisation': token
             }
-        });
-        console.log(response)
-    } catch (error) {
-        console.error('Erreur:', error);
-        return 400;
+        })
+        .then(response => {
+            if (response.status === 200 || response.status === 201) {
+                return response.json()
+            } else {
+                disconnect();
+                return Promise.reject("Échec de la requête");
+            }
+        })
+        .then(response => {
+            datas = response.data;
+            const params = new URLSearchParams(window.location.search);
+            const conversationId = params.get("conversation");
+
+            const chat_box = document.getElementById('chat-box');
+    
+            if (conversationId) {
+                conversation = datas.find(conv => conv.id_conversation == conversationId);
+                if (conversation) {
+                    let bot = true;
+                    for (const message of conversation.messages) {
+                        let startingMessage = document.createElement("div");
+                        startingMessage.classList.add("message", bot?"bot":"user");
+                        startingMessage.textContent = message.content;
+                        chat_box.appendChild(startingMessage)
+                        bot = !bot
+                    }
+                    for (const work of conversation.recommendations) {
+                        let workRow = document.createElement("div");
+                        workRow.classList.add("reco");
+                        workRow.textContent = work.title;
+                        recoBox.appendChild(workRow);
+                    }
+                } else {
+                    const url = new URL(window.location);
+                    url.search = "";
+                    window.history.replaceState({}, "", url);
+                    window.location.reload();
+                }
+            }
+            else {
+                if (datas.length) {
+                    const newParams = new URLSearchParams();
+                    newParams.set("conversation", datas[datas.length-1].id_conversation);
+                    window.location.search = newParams.toString();
+                }
+                else {
+                    newConv(token)
+                }
+            }
+    
+            let convRow = document.createElement("div");
+            convRow.classList.add("button-conv");
+            convRow.textContent = "Nouvelle Conversation";
+            convRow.addEventListener("click", () => {
+                newConv(token)
+            });
+            sidebar_histo.appendChild(convRow);
+            for (const data of datas) {
+                let convRow = document.createElement("div");
+                convRow.classList.add("button-conv");
+                convRow.textContent = data.name;
+                convRow.addEventListener("click", () => {
+                    const newParams = new URLSearchParams();
+                    newParams.set("conversation", data.id_conversation);
+                    window.location.search = newParams.toString();
+                });
+                sidebar_histo.appendChild(convRow);
+            }
+        })
+        .catch (error => {
+            console.error('Erreur:', error);
+        })
+    }
+    else {
+        console.log("nkslfnfnpsnpfnoi")
+        const button = document.createElement("button");
+        button.classList.add("menu-button");
+        button.id = "login-button";
+        button.innerHTML = '<img src="../../assets/login.png" alt="Connexion" width="50" draggable="false">';
+        button.addEventListener("click", () => {
+            sidebar_login.classList.toggle('closed');
+        });        
+        button_box.appendChild(button)
     }
 });  
+
+function disconnect() {
+    localStorage.clear();
+    const url = new URL(window.location);
+    url.search = "";
+    window.history.replaceState({}, "", url);
+    window.location.reload();
+}
+
+function newConv(token) {
+    fetch('http://localhost:5000/newconv', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-API-KEY': CONFIG.API_KEY,
+            'Authorisation': token
+        }
+    })
+    .then(response => {
+        if (response.status === 200 || response.status === 201) {
+            return response.json()
+        } else {
+            return Promise.reject("Échec de la requête");
+        }
+    })
+    .then(data => {
+        const newParams = new URLSearchParams();
+        newParams.set("conversation", data.id);
+        window.location.search = newParams.toString();
+    });
+}
 
 document.getElementById("user-input").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
@@ -29,7 +165,6 @@ async function sendMessage() {
     document.getElementById("user-input").value = "";
 
     let chatBox = document.getElementById("chat-box");
-    let recoBox = document.getElementById("reco-box");
 
     // Affichage du message de l'utilisateur
     let userMessage = document.createElement("div");
@@ -60,6 +195,9 @@ async function sendMessage() {
 
 async function getBotResponse(input) {
     try {
+        const params = new URLSearchParams(window.location.search);
+        const conversationId = params.get("conversation");
+
         const response = await fetch('http://localhost:5000/chat', {
             method: 'POST',
             headers: {
@@ -68,6 +206,7 @@ async function getBotResponse(input) {
             },
             body: JSON.stringify({
                 message: input,
+                id: conversationId
             }),
             mode: "cors"
         });
@@ -85,27 +224,44 @@ function toggleMenu() {
     document.getElementById("menu").classList.toggle("show");
 }
 
-const sidebar_login = document.getElementById('sidebar-login');
-const loginButton = document.getElementById('login-button');
 
-// Fermer le menu si on clique en dehors
+const CGUButton = document.getElementById('CGU-button');
+const infoButton = document.getElementById('info-button');
+
 document.addEventListener("click", function(event) {
     const menu = document.getElementById("menu");
     const button = document.querySelector("button");
+    const loginButton = document.getElementById('login-button');
+    const histoButton = document.getElementById('histo-button');
 
     if (!menu.contains(event.target) && !button.contains(event.target)) {
         menu.classList.remove("show");
     }
 
-    if (!sidebar_login.contains(event.target) && !loginButton.contains(event.target)) {
+    if (loginButton && !sidebar_login.contains(event.target) && !loginButton.contains(event.target)) {
         sidebar_login.classList.add("closed");
+    }
+
+    if (histoButton && !sidebar_histo.contains(event.target) && !histoButton.contains(event.target)) {
+        sidebar_histo.classList.add("closed");
+    }
+
+    if (CGUButton && !sidebar_CGU.contains(event.target) && !CGUButton.contains(event.target)) {
+        sidebar_CGU.classList.add("closed");
+    }
+
+    if (infoButton && !sidebar_info.contains(event.target) && !infoButton.contains(event.target)) {
+        sidebar_info.classList.add("closed");
     }
 });
 
 // Toggle de la classe "closed" au clic sur le bouton
-loginButton.addEventListener('click', function(event) {
-    sidebar_login.classList.toggle('closed');
-    event.stopPropagation();
+CGUButton.addEventListener('click', function(event) {
+    sidebar_CGU.classList.toggle('closed');
+});
+
+infoButton.addEventListener('click', function(event) {
+    sidebar_info.classList.toggle('closed');
 });
 
 document.getElementById("toggle-form").addEventListener("click", function() {
@@ -170,3 +326,4 @@ document.getElementById("auth-form").addEventListener("submit", function(event) 
         alert(isRegistering ? `Échec de l'inscription` : `Échec de la connexion`);
     });
 });
+
