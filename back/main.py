@@ -15,6 +15,7 @@ from functools import wraps
 load_dotenv()
 
 app = Flask("Beauvoir_DWWM_Project")
+CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
 if __name__ == "__main__":
     app.run(debug=True)
 
