@@ -267,7 +267,7 @@ body {
 }
 
 .button-conv {
-    width: 50%;
+    width: 60%;
     padding: 10px;
     background: #FF9F1C;
     color: white;
@@ -297,4 +297,15 @@ h2 {
 }
 p {
     margin-bottom: 15px;
+}
+
+.suppr-conv {
+    background-color: red;
+    border-radius: 15px;
+    height: 70%;
+    aspect-ratio: 1;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    cursor: pointer;
 }

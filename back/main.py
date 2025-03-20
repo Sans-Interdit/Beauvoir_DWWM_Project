@@ -3,7 +3,7 @@ from flask_cors import CORS
 import ollama
 import json
 from .llm_calls import determine_prompt_type, determine_criterias
-from models.Account import Account, session, Conversation, Message
+from datas.models import Account, session, Conversation, Message
 from .recommend import searchWorks
 import os
 from dotenv import load_dotenv
@@ -15,13 +15,16 @@ from functools import wraps
 load_dotenv()
 
 app = Flask("Beauvoir_DWWM_Project")
-CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
-
 if __name__ == "__main__":
     app.run(debug=True)
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    """
+    Gère les interactions utilisateur avec le chatbot.
+    Vérifie la clé API, stocke le message, détermine s'il s'agit d'une recommandation,
+    Récupère les recommandations si nécessaire et génère une réponse via Ollama.
+    """
     api_key_send = request.headers.get("X-API-KEY")
     if api_key_send != os.getenv("API_KEY"):
         return jsonify({"error": "Unauthorized access"}), 401
@@ -37,8 +40,8 @@ def chat():
 
     prompt = {"role":"user", "content": userMessage}
 
-    is_about_reco = determine_prompt_type(prompt).lower() == "oui" # Determine if the user is asking for recommendations
-
+    is_about_reco = determine_prompt_type(prompt).lower() == "oui"
+    
     if is_about_reco:
         conv = session.query(Conversation).filter_by(id_conversation=id).first()
         criterias = determine_criterias(prompt)
@@ -68,6 +71,10 @@ def chat():
 
 @app.route("/login", methods=["POST"])
 def login():
+    """
+    Authentifie un utilisateur avec son email et son mot de passe.
+    Retourne un token JWT si les identifiants sont corrects.
+    """
     api_key_send = request.headers.get("X-API-KEY")
     if api_key_send != os.getenv("API_KEY"):
         return jsonify({"error": "Unauthorized access"}), 401
@@ -83,6 +90,9 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
     
 def get_logged(account):
+    """
+    Génère un token JWT pour un compte utilisateur authentifié.
+    """
     payload = {
         'id': account.id_account,
         'email': account.email,
@@ -90,11 +100,14 @@ def get_logged(account):
     }
     
     token = jwt.encode(payload, os.getenv("CRYPT_KEY"), algorithm='HS256')
-    print(token)
     return jsonify({"token": token}), 200
 
 @app.route("/register", methods=["POST"])
 def register():
+    """
+    Inscrit un nouvel utilisateur avec un email et un mot de passe haché.
+    Retourne un token JWT après l'inscription.
+    """
     email = request.json.get("email")
     password = request.json.get('password')
 
@@ -111,15 +124,17 @@ def register():
     return get_logged(new_account)
 
 def token_required(f):
+    """
+    Décorateur pour exiger une authentification par token JWT.
+    Vérifie la validité et l'expiration du token.
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.headers.get("Authorisation")
-        print(token)
         if not token:
             return jsonify({"error": "Token is missing"}), 401
         
         try:
-            # token = token.split("Bearer ")[1]  # Suppression du préfixe "Bearer "
             data = jwt.decode(token, os.getenv("CRYPT_KEY"), algorithms=["HS256"])
             request.user_id = data["id"]
         except jwt.ExpiredSignatureError:
@@ -134,14 +149,19 @@ def token_required(f):
 @app.route("/historic", methods=["POST"])
 @token_required
 def historic():
+    """
+    Récupère l'historique des conversations d'un utilisateur authentifié.
+    """
     account = session.query(Account).filter_by(id_account=request.user_id).first()
-    print(request.user_id)
     conversations = [conv.to_dict() for conv in account.conversations]
     return jsonify({"data": conversations}), 200
 
 @app.route("/newconv", methods=["POST"])
 @token_required
 def newConv():
+    """
+    Crée une nouvelle conversation pour un utilisateur authentifié.
+    """
     account = session.query(Account).filter_by(id_account=request.user_id).first()
 
     nbr = len(account.conversations) + 1
@@ -153,3 +173,19 @@ def newConv():
     session.add(new_message)
     session.commit()
     return jsonify({"id": new_conversation.id_conversation}), 200
+
+@app.route("/suppressconv", methods=["POST"])
+@token_required
+def suppressconv():
+    """
+    Supprime une conversation d'un utilisateur authentifié.
+    """
+    id = request.json.get("id")
+    conversation = session.query(Conversation).filter_by(id_conversation=id).first()
+
+    if conversation and conversation.id_account == request.user_id:
+        session.delete(conversation)
+        session.commit()
+        return jsonify({"message": "Conversation supprimée"}), 200
+
+    return jsonify({"error": "Conversation non trouvée ou accès refusé"}), 404

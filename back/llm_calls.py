@@ -13,12 +13,11 @@ Ne réponds uniquement par oui ou non."""}
 
     return response["message"]["content"]
 
-def determine_criterias(prompt):
+def determine_criterias(prompt): # - \"ranking\": float (entre 0 et 1)\n- \"genres\": list[str]\n- \"episodes\": int (nombre d'épisodes total)\n- \"status\": str\n- (étape de publication : en cours, terminé, etc...) 
     metaprompt = {
-  "role": "system",
-  "content": "Votre rôle est de déterminer les critères recherchés par l'utilisateur dans son message.\nN'y mettez que les critères clairement identifiés.\nNe mettez que les critères explicitement exprimés.\nLa réponse doit être un JSON valide contenant un ou plusieurs des critères suivants:\n\n- \"title\": str\n- \"ranking\": float (entre 0 et 1)\n- \"genres\": list[str] (parmi \"Action\", \"Adventure\", \"Comedy\", \"Drama\", \"Fantasy\", \"Magic\", \"Mystery\", \"Psychological\", \"Romance\", \"Sci-Fi\", \"Slice of Life\", \"Supernatural\")\n- \"episodes\": int (nombre d'épisodes total)\n- \"status\": str (parmi \"Not yet aired\", \"Currently Airing\", \"Finished Airing\")\n- \"format\": str (parmi \"anime\", \"film\", \"serie\")\n- \"key_words\": list[str] (tous les mots clés identifiés dans le message de l'utilisateur)\n\n**Règles supplémentaires :**\n- Si l'utilisateur mentionne \"film(s)\", définir \"format\": \"film\".\n- Si l'utilisateur mentionne \"anime(s)\", définir \"format\": \"anime\".\n- Si l'utilisateur mentionne \"série(s)\", définir \"format\": \"serie\".\n- Ne pas inférer de format si ce n'est pas explicitement mentionné."
-}
-
+        "role": "system",
+        "content": "Votre rôle est de déterminer les critères recherchés par l'utilisateur dans son message.\n Ne fait jamais par toi même la recommendation.\nLa réponse doit être un JSON valide.\n Ce JSON sera composé d'un; deux ou trois critères uniquement si pertinents.\n\n***Critères :\n- \"title\": str(Titre de L'oeuvre recherché explicitement mentionné)\n- \"format\": str (le type d'oeuvres : anime, série, film)\n- \"key_words\": list[str] (tous les mots clés clairement identifiés)"
+    }
     response = ollama.chat(
         model="french_qwen",
         stream=False,

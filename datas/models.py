@@ -20,8 +20,8 @@ class Conversation(Base):
     __tablename__ = 'conversation'
     
     id_conversation = Column(Integer, primary_key=True)
-    name = Column(String)
     id_account = Column(Integer, ForeignKey('account.id_account'))
+    name = Column(String)
     recommendations = Column(JSON)
 
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")

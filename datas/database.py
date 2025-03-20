@@ -101,7 +101,7 @@ import json
 
 # import pandas as pd
 
-# df = pd.read_csv("models/film_original.csv", sep=",", quotechar='"', quoting=1)
+# df = pd.read_csv("datas/film_original.csv", sep=",", quotechar='"', quoting=1)
 
 # # Garder uniquement les lignes où 'adult' est False
 # df = df[df["adult"] == False]
@@ -115,7 +115,7 @@ import json
 # df = df.rename(columns={"overview": "synopsis"})
 
 # # Sauvegarder le fichier nettoyé
-# df.to_csv("models/film.csv", index=False, sep=",", quotechar='"', quoting=1)
+# df.to_csv("datas/film.csv", index=False, sep=",", quotechar='"', quoting=1)
 
 
 
@@ -125,9 +125,9 @@ import json
 
 import pandas as pd
 
-df = pd.read_csv("models/anime.csv", sep=",", quotechar='"', quoting=1)
+df = pd.read_csv("datas/anime.csv", sep=",", quotechar='"', quoting=1)
 
 df["format"] = "anime"
 
 # Sauvegarder le fichier nettoyé
-df.to_csv("models/anime.csv", index=False, sep=",", quotechar='"', quoting=1)
+df.to_csv("datas/anime.csv", index=False, sep=",", quotechar='"', quoting=1)

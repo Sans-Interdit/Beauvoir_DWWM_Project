@@ -93,15 +93,57 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             sidebar_histo.appendChild(convRow);
             for (const data of datas) {
-                let convRow = document.createElement("div");
-                convRow.classList.add("button-conv");
-                convRow.textContent = data.name;
-                convRow.addEventListener("click", () => {
+                let convRow = document.createElement("div");                
+                convRow.style.display = "flex";
+                convRow.style.alignItems = "center"
+                convRow.style.justifyContent = "center"
+                convRow.style.width = "100%"
+
+                let conv = document.createElement("div");
+                conv.classList.add("button-conv");
+                conv.textContent = data.name;
+                conv.addEventListener("click", () => {
                     const newParams = new URLSearchParams();
                     newParams.set("conversation", data.id_conversation);
                     window.location.search = newParams.toString();
                 });
+                convRow.appendChild(conv)
+
+                
+                let supprConv = document.createElement("div");
+                supprConv.classList.add("suppr-conv");
+                supprConv.innerHTML = '<img src="../../assets/bin.png" alt="History" width="40" draggable="false">';
+                supprConv.addEventListener("click", () => {
+                    fetch('http://localhost:5000/suppressconv', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-KEY': CONFIG.API_KEY,
+                            'Authorisation': token
+                        },
+                        body: JSON.stringify({
+                            id: data.id_conversation
+                        }),
+                    })
+                    .then(response => {
+                        if (response.status === 200 || response.status === 201) {
+                            return response.json()
+                        } else {
+                            return Promise.reject("Échec de la requête");
+                        }
+                    })
+                    .then(response => {
+                        window.location.reload()
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                    });
+                });
+                convRow.appendChild(supprConv)
+
                 sidebar_histo.appendChild(convRow);
+
+
             }
         })
         .catch (error => {
@@ -109,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         })
     }
     else {
-        console.log("nkslfnfnpsnpfnoi")
         const button = document.createElement("button");
         button.classList.add("menu-button");
         button.id = "login-button";
@@ -316,7 +357,6 @@ document.getElementById("auth-form").addEventListener("submit", function(event) 
     .then(response => {
         // Sauvegarder le token dans le localStorage
         if (response.token) {
-            console.log(response.token)
             localStorage.setItem("authToken", response.token);
         }
         window.location.href = "chat.html";

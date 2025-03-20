@@ -39,7 +39,7 @@ def encode_works(works):
     # Construction des objets PointStruct
     encoded_works = [
         models.PointStruct(
-            id=int(work["id"]),
+            id=100000+int(work["id"]),
             payload=work,
             vector={"title": encoded_titles[i], "synopsis": encoded_synopses[i]},
         )
@@ -53,7 +53,7 @@ def encode_works(works):
 if __name__ == "__main__":
     create_collection()
 
-    with open("models/film.csv", mode="r", encoding="utf-8") as file:
+    with open("datas/film.csv", mode="r", encoding="utf-8") as file:
         film_liste = list(csv.DictReader(file))
     # with open("film_data.json", "r", encoding="utf-8") as json_file:
     #     works_list = json.load(json_file)

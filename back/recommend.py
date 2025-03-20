@@ -31,6 +31,17 @@ def create_prefetch(criterias):
         "key_words",
     ]
 
+    format = criterias.get("format")
+
+    filter_value = models.Filter(
+        should=[
+            models.FieldCondition(
+                key="format",
+                match=models.MatchValue(value=format)
+            )
+        ]
+    )
+
     criteria_vectors = {}
     for possible_field in criteria_fields:
         field = criterias.get(possible_field)
@@ -39,12 +50,13 @@ def create_prefetch(criterias):
                 criteria_vectors["synopsis"] = model.encode(" ".join(field))
             else:
                 criteria_vectors[possible_field] = model.encode(field)
-    # if not criteria_vectors:
-    #     return [models.Prefetch()]
 
-    return [
-        models.Prefetch(
-            query=vector_value, using=vector_name, limit=50 # filter=filter_value,
-        )
-        for vector_name, vector_value in criteria_vectors.items()
-    ]
+    if not criteria_vectors:
+        return models.Prefetch(filter=filter_value, limit=50)
+    else:
+        return [
+            models.Prefetch(
+                query=vector_value, using=vector_name,filter=filter_value, limit=50
+            )
+            for vector_name, vector_value in criteria_vectors.items()
+        ]
