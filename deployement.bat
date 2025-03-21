@@ -1,20 +1,14 @@
+# Clone le dépôt Git du projet
 git clone https://github.com/Sans-Interdit/Beauvoir_DWWM_Project.git
-cd Beauvoir_DWWM_Project
 
-python -m venv venv
-call venv\Scripts\activate
+# Se déplacer dans le dossier du backend du projet
+cd Beauvoir_DWWM_Project/back
 
-python -m pip install -r requirements.txt
-
-cd back
+# Créer un fichier .env contenant les clés d'API et de chiffrement (à remplir avec des valeurs réelles)
 (
-echo API_KEY=""
-echo CRYPT_KEY=""
+echo API_KEY=""   # Clé API utilisée par l'application (à compléter)
+echo HASH_KEY="" # Clé de chiffrement utilisée pour la sécurité des données (à compléter)
 ) > .env
 
-cd ..\datas
-
-python database.py
-python handle_qdrant.py
-
+# Garde la console ouverte après l'exécution du script (Windows)
 cmd /k

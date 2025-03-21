@@ -27,6 +27,7 @@ def chat():
     Récupère les recommandations si nécessaire et génère une réponse via Ollama.
     """
     api_key_send = request.headers.get("X-API-KEY")
+    print(api_key_send, os.getenv("API_KEY"))
     if api_key_send != os.getenv("API_KEY"):
         return jsonify({"error": "Unauthorized access"}), 401
     
@@ -100,7 +101,7 @@ def get_logged(account):
         'exp': datetime.datetime.now() + datetime.timedelta(hours=1)
     }
     
-    token = jwt.encode(payload, os.getenv("CRYPT_KEY"), algorithm='HS256')
+    token = jwt.encode(payload, os.getenv("HASH_KEY"), algorithm='HS256')
     return jsonify({"token": token}), 200
 
 @app.route("/register", methods=["POST"])
@@ -136,7 +137,7 @@ def token_required(f):
             return jsonify({"error": "Token is missing"}), 401
         
         try:
-            data = jwt.decode(token, os.getenv("CRYPT_KEY"), algorithms=["HS256"])
+            data = jwt.decode(token, os.getenv("HASH_KEY"), algorithms=["HS256"])
             request.user_id = data["id"]
         except jwt.ExpiredSignatureError:
             return jsonify({"error": "Token has expired"}), 401
