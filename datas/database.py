@@ -1,46 +1,43 @@
-import http.client
-import json
+# import http.client
+# import json
 
-conn = http.client.HTTPSConnection("anime-db.p.rapidapi.com")
+# conn = http.client.HTTPSConnection("anime-db.p.rapidapi.com")
 
-headers = {
-    'x-rapidapi-key': "1d9893af29mshbffda0f261e66d4p1f8714jsn270e044eef5c",
-    'x-rapidapi-host': "anime-db.p.rapidapi.com"
-}
+# headers = {
+#     'x-rapidapi-key': "1d9893af29mshbffda0f261e66d4p1f8714jsn270e044eef5c",
+#     'x-rapidapi-host': "anime-db.p.rapidapi.com"
+# }
 
-conn.request("GET", "/anime?page=1&size=100000000", headers=headers)
+# conn.request("GET", "/anime?page=1&size=100000000", headers=headers)
 
-res = conn.getresponse()
-data = res.read()
+# res = conn.getresponse()
+# data = res.read()
 
-# Convertir en dictionnaire
-anime_dict = json.loads(data.decode("utf-8"))
+# # Convertir en dictionnaire
+# anime_dict = json.loads(data.decode("utf-8"))
 
-for e in anime_dict:
-    del e["link"]
-    del e["image"]
-    del e["thumb"]
-    del e["hasEpisode"]
-    del e["hasRanking"]
+# for e in anime_dict:
+#     del e["link"]
+#     del e["image"]
+#     del e["thumb"]
+#     del e["hasEpisode"]
+#     del e["hasRanking"]
 
-# Écrire dans un fichier JSON
-with open("anime_data.json", "w", encoding="utf-8") as json_file:
-    json.dump(anime_dict, json_file, ensure_ascii=False, indent=4)
+# # Écrire dans un fichier JSON
+# with open("anime_data.json", "w", encoding="utf-8") as json_file:
+#     json.dump(anime_dict, json_file, ensure_ascii=False, indent=4)
 
 
 
+# df = pd.read_csv("datas/anime.csv", sep=",", quotechar='"', quoting=1)
+
+# df["format"] = "anime"
+
+# # Sauvegarder le fichier nettoyé
+# df.to_csv("datas/anime.csv", index=False, sep=",", quotechar='"', quoting=1)
 
 
 import pandas as pd
-
-df = pd.read_csv("datas/anime.csv", sep=",", quotechar='"', quoting=1)
-
-df["format"] = "anime"
-
-# Sauvegarder le fichier nettoyé
-df.to_csv("datas/anime.csv", index=False, sep=",", quotechar='"', quoting=1)
-
-
 
 
 try:
