@@ -1,9 +1,9 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
-    justify-content: center;
     align-items: center;
     height: 100vh;
+    width: 100%;
     background-color: #1a1a1a;
     margin: 0;
 }
@@ -62,7 +62,7 @@ body {
     text-align: right;
 }
 
-input {
+#user-input {
     width: 90%;
     padding: 3%;
     margin-top: 3%;
@@ -165,10 +165,147 @@ input {
 }
 
 #optionButton {
+    position: fixed;
     background-color: #FF9F1C;
     color: white;
     border: none;
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 5px;
+}
+
+.sidebar {
+    width: 33%;
+    height: 100vh;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 6%;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 1;
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+  /* La barre est cachée (hors écran) lorsqu'elle a la classe "closed" */
+.sidebar.closed {
+    transform: translateX(-100%);
+}
+  /* Bouton pour ouvrir/fermer la barre */
+.menu-button {
+    background-color: #333;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10%;
+    margin-top: 10%;
+    aspect-ratio: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-button img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.all-buttons {
+    flex-direction: column;
+    display: flex;
+    height: 100%;
+    width: 6%;
+    margin-right: 2%;
+    z-index: 2;
+    background-color: #333;
+    align-items: center;
+}
+
+.up{
+    display: flex;
+    justify-content: start;
+    flex-direction: column;
+    height: 50%;
+}
+
+.down{
+    display: flex;
+    justify-content: end;
+    flex-direction: column;
+    height: 50%;
+}
+
+.input-login {
+    width: 70%;
+    padding: 10px;
+    margin: 5%;
+    border: 1px solid #FF9F1C;
+    border-radius: 5px;
+}
+
+.button-login {
+    width: 40%;
+    padding: 10px;
+    background: #FF9F1C;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.toggle {
+    margin-top: 10px;
+    color: blue;
+    cursor: pointer;
+}
+#confirm-password {
+    display: none;
+}
+
+.button-conv {
+    width: 60%;
+    padding: 10px;
+    background: #FF9F1C;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 25px;
+    margin: 2%;
+}
+
+.CGU-container {
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto; 
+}
+h1 {
+    color: #FF9F1C;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+}
+h2 {
+    color: #A259FF;
+    margin-top: 20px;
+}
+p {
+    margin-bottom: 15px;
+}
+
+.suppr-conv {
+    background-color: red;
+    border-radius: 15px;
+    height: 70%;
+    aspect-ratio: 1;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    cursor: pointer;
 }
