@@ -5,7 +5,7 @@ client = QdrantClient(
     url="http://localhost:6333",
     api_key= "test",
 )
-COLLECTION_NAME = "all-works"
+COLLECTION_NAME = "works"
 model = SentenceTransformer('all-MiniLM-L6-v2')
 model.to('cuda')
 
@@ -31,16 +31,23 @@ def create_prefetch(criterias):
         "key_words",
     ]
 
-    format = criterias.get("format")
+    # criterias = {
+    #     "key_words": ["arrogant", "warrior", "god"],
+    #     "format": "film",
+    # }
 
-    filter_value = models.Filter(
-        should=[
-            models.FieldCondition(
-                key="format",
-                match=models.MatchValue(value=format)
-            )
-        ]
-    )
+    filter_value = None
+
+    format = criterias.get("format")
+    if format:
+        filter_value = models.Filter(
+            should=[
+                models.FieldCondition(
+                    key="format",
+                    match=models.MatchValue(value=format)
+                )
+            ]
+        )
 
     criteria_vectors = {}
     for possible_field in criteria_fields:
@@ -53,6 +60,13 @@ def create_prefetch(criterias):
 
     if not criteria_vectors:
         return models.Prefetch(filter=filter_value, limit=50)
+    elif not filter_value:
+        return [
+            models.Prefetch(
+                query=vector_value, using=vector_name, limit=50
+            )
+            for vector_name, vector_value in criteria_vectors.items()
+        ]
     else:
         return [
             models.Prefetch(

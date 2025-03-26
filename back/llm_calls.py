@@ -3,13 +3,7 @@ import ollama
 def determine_prompt_type(prompt):
     metaprompt = {"role":'system',
 "content" : f"""Votre rôle est de determiner si le message de l'utilisateur souhaite une recommendation de contenu audiovisuel.
-Ne réponds uniquement par oui ou non.
-
-***Exemple : 
-Je cherche une veille série de science fiction à regarder.
-- oui
-Je souhaite savoir la météo de demain
-- non"""}
+Réponds par oui si l'utilisateur demande une recommendation de contenu audiovisuel, et par non sinon."""}
     response = ollama.chat(
         model="french_qwen",
         stream=False,
@@ -17,6 +11,7 @@ Je souhaite savoir la météo de demain
         options={"temperature": 0.3}
     )
 
+    print(response["message"]["content"])
     return response["message"]["content"]
 
 def determine_criterias(prompt): # - \"ranking\": float (entre 0 et 1)\n- \"genres\": list[str]\n- \"episodes\": int (nombre d'épisodes total)\n- \"status\": str\n- (étape de publication : en cours, terminé, etc...) 

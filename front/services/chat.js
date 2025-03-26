@@ -2,6 +2,7 @@ const sidebar_login = document.getElementById('sidebar-login');
 const sidebar_histo = document.getElementById('sidebar-histo');
 const sidebar_CGU = document.getElementById('sidebar-CGU');
 const sidebar_info = document.getElementById('sidebar-info');
+const sidebar_profile = document.getElementById('sidebar-profile');
 const button_box = document.getElementById("buttons-box")
 let recoBox = document.getElementById("reco-box");
 
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         profile_button.id = "profile-button";
         profile_button.innerHTML = '<img src="../../assets/power-off.png" alt="History" width="50" draggable="false">';
         profile_button.addEventListener("click", () => {
-            disconnect();
+            sidebar_profile.classList.toggle('closed');
         });
         button_box.appendChild(profile_button)
 
@@ -274,6 +275,7 @@ document.addEventListener("click", function(event) {
     const button = document.querySelector("button");
     const loginButton = document.getElementById('login-button');
     const histoButton = document.getElementById('histo-button');
+    const profileButton = document.getElementById('profile-button');
 
     if (!menu.contains(event.target) && !button.contains(event.target)) {
         menu.classList.remove("show");
@@ -293,6 +295,10 @@ document.addEventListener("click", function(event) {
 
     if (infoButton && !sidebar_info.contains(event.target) && !infoButton.contains(event.target)) {
         sidebar_info.classList.add("closed");
+    }
+
+    if (profileButton && !sidebar_profile.contains(event.target) && !profileButton.contains(event.target)) {
+        sidebar_profile.classList.add("closed");
     }
 });
 

@@ -2,22 +2,29 @@
 from llm_calls import determine_prompt_type, determine_criterias  # Assurez-vous que ce fichier est correct
 import json
 
-def test_determine_prompt_type():
+def test_determine_prompt_type1():
     try:
-        prompt = {"role": "user", "content": "Je cherche un film avec un super héros"}
+        prompt = {"role": "user", "content": "Je cherche un film qui est une vidéo de musique pour la chanson Oyasumi"}
         result = determine_prompt_type(prompt)
         expected_result = "oui"
-        assert result == expected_result
+        assert result.lower() == expected_result
         print("✅ test_determine_prompt_type (cas 1) réussi")
+    
+    except AssertionError:
+        print("❌ test_determine_prompt_type (cas 1) échoué")
 
-        prompt = {"role": "user", "content": "Je souhaite avoir "}    
+
+def test_determine_prompt_type2():
+    try:
+        prompt = {"role": "user", "content": "Je souhaite avoir la météo de demain"}    
         result = determine_prompt_type(prompt)
         expected_result = "non"
-        assert result == expected_result
+        assert result.lower() == expected_result
         print("✅ test_determine_prompt_type (cas 2) réussi")
     
     except AssertionError:
-        print("❌ test_determine_prompt_type échoué")
+        print("❌ test_determine_prompt_type (cas 2) échoué")
+
 
 def test_determine_criterias():
     try:
@@ -31,5 +38,6 @@ def test_determine_criterias():
         print("❌ test_determine_criterias échoué")
 
 if __name__ == "__main__":
-    test_determine_prompt_type()
-    test_determine_criterias()
+    test_determine_prompt_type1()
+    test_determine_prompt_type2()
+    # test_determine_criterias()

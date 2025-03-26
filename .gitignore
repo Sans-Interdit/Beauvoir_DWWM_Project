@@ -3,5 +3,7 @@ __pycache__
 back/.env
 film_original.csv
 film.csv
+film_translated.csv
 anime.csv
+anime_translated.csv
 assets
