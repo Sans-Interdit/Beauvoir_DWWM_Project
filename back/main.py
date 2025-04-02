@@ -3,7 +3,7 @@ from flask_cors import CORS
 import ollama
 import json
 from .llm_calls import determine_prompt_type, determine_criterias
-from datas.models import Account, session, Conversation, Message
+from datas.models import Account, session, Conversation, Message, Recommendation, Genre
 from .recommend import searchWorks
 import os
 from dotenv import load_dotenv
@@ -53,7 +53,9 @@ def chat():
             return jsonify({"error": "Error in determine_criterias. Invalid JSON format"}), 400
         
         works = searchWorks(criterias)
-        conv.recommendations = works
+
+        reco = Recommendation(id_conversation=id, oeuvres=works)
+        conv.recommendation = reco
 
     response = ollama.chat(
         model="DWWM",
@@ -112,17 +114,22 @@ def register():
     """
     email = request.json.get("email")
     password = request.json.get('password')
+    age = request.json.get("age")
+    country = request.json.get('country')
+    gender = request.json.get('gender')
+    try:
+        account = session.query(Account).filter_by(email=email).first()
+        if account:
+            return jsonify({"message": "Email already used"}), 400
 
-    account = session.query(Account).filter_by(email=email).first()
-    if account:
-        return jsonify({"message": "Email already used"}), 400
-
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
-    new_account = Account(email=email, password=hashed_password)
-    session.add(new_account)
-    session.commit()
-
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        new_account = Account(email=email, password=hashed_password, age=age, country=country, gender=gender)
+        session.add(new_account)
+        session.commit()
+    except Exception as e:
+        session.rollback()  # Rollback the transaction
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500
     return get_logged(new_account)
 
 def token_required(f):
@@ -167,16 +174,23 @@ def newConv():
     account = session.query(Account).filter_by(id_account=request.user_id).first()
 
     nbr = len(account.conversations) + 1
-    new_conversation = Conversation(name=f"Conversation {nbr}", id_account=account.id_account, recommendations=[])
+    new_conversation = Conversation(name=f"Conversation {nbr}", id_account=account.id_account)
     session.add(new_conversation)
+    session.commit()
+
+    new_recommendation = Recommendation(id_conversation=new_conversation.id_conversation, oeuvres=[])
+    session.add(new_recommendation)
     session.commit()
 
     new_message = Message(id_conversation=new_conversation.id_conversation, content="Bonjour, comment puis-je vous aider aujourd'hui?")
     session.add(new_message)
     session.commit()
+
+    a = session.query(Conversation).filter_by(id_conversation=new_conversation.id_conversation).first()
+    print(a.recommendation)
     return jsonify({"id": new_conversation.id_conversation}), 200
 
-@app.route("/suppressconv", methods=["POST"])
+@app.route("/suppressconv", methods=["DELETE"])
 @token_required
 def suppressconv():
     """
@@ -188,6 +202,82 @@ def suppressconv():
     if conversation and conversation.id_account == request.user_id:
         session.delete(conversation)
         session.commit()
-        return jsonify({"message": "Conversation supprimée"}), 200
+        return jsonify({"message": "Conversation suppressed"}), 200
 
-    return jsonify({"error": "Conversation non trouvée ou accès refusé"}), 404
+    return jsonify({"error": "Conversation not found or access refused"}), 404
+
+@app.route("/suppressacc", methods=["DELETE"])
+@token_required
+def suppressacc():
+    """
+    Supprime une conversation d'un utilisateur authentifié.
+    """
+    id = request.user_id
+    account = session.query(Account).filter_by(id_account=id).first()
+
+    if account:
+        session.delete(account)
+        session.commit()
+        return jsonify({"message": "Account suppressed"}), 200
+
+    return jsonify({"error": "Account not found or access refused"}), 404
+
+@app.route("/getuserinfos", methods=["GET"])
+@token_required
+def getinfos():
+    """
+    Récupère les informations d'un utilisateur authentifié.
+    """
+    account = session.query(Account).filter_by(id_account=request.user_id).first()
+    if account:
+        return jsonify({"email": account.email, "age": account.age, "country": account.country, "gender": account.gender}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+@app.route("/addgenre", methods=["POST"])
+@token_required
+def addgenre():
+    """
+    Crée un genre d'un utilisateur authentifié.
+    """
+    id = request.user_id
+    name = request.json.get("name")
+
+    account = session.query(Account).filter_by(id_account=id).first()
+    if not account:
+        return jsonify({"error": "User not found"}), 404
+    
+    genre = session.query(Genre).filter_by(name=name).first()
+    if not genre:
+        return jsonify({"error": "Genre not found"}), 404
+    
+    if genre not in account.genres:
+        account.genres.append(genre)
+        session.commit()
+        return jsonify({"message": "Genre added successfully", "id": genre.id_genre}), 201
+    else:
+        return jsonify({"message": "Genre already associated with user"}), 200
+
+@app.route("/suppressgenre", methods=["DELETE"])
+@token_required
+def suppressgenre():
+    """
+    Supprime un genre d'un utilisateur authentifié.
+    """
+    id = request.user_id
+    id_genre = request.json.get("id")
+    account = session.query(Account).filter_by(id_account=id).first()
+    if account:
+        print(account.genres)
+        genre = session.query(Genre).join(Account.genres).filter(
+                Genre.id_genre == id_genre, Account.id_account == id
+            ).first()        
+        print(genre)
+        if genre:
+            session.delete(genre)
+            session.commit()
+            return jsonify({"message": "Genre deleted"}), 200
+        else:
+            return jsonify({"error": "Genre not found"}), 404
+    else:
+        return jsonify({"error": "User not found"}), 404

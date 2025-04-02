@@ -181,7 +181,7 @@ body {
     color: white;
     position: fixed;
     top: 0;
-    left: 6%;
+    left: 5.9%;
     overflow-y: auto;
     transition: transform 0.3s ease;
     z-index: 1;
@@ -247,7 +247,7 @@ body {
     border-radius: 5px;
 }
 
-.button-login {
+.button {
     width: 40%;
     padding: 10px;
     background: #FF9F1C;
@@ -255,6 +255,8 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 18px;
+    margin: 5%;
 }
 
 .toggle {
@@ -262,8 +264,11 @@ body {
     color: blue;
     cursor: pointer;
 }
-#confirm-password {
+
+#auth-div {
     display: none;
+    flex-direction: column;
+    width: 100%;
 }
 
 .button-conv {
@@ -284,16 +289,25 @@ body {
     background-color: #333;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     overflow-y: auto; 
+    width: 91%;
 }
 h1 {
     color: #FF9F1C;
     text-align: center;
     padding-bottom: 10px;
     border-bottom: 2px solid #ecf0f1;
+    width: 100%;
 }
 h2 {
     color: #A259FF;
     margin-top: 20px;
+}
+h3 {
+    font-size: 15px;
+    margin: 5px;
+    text-align: center;
+    width: 100px;
+    color: #FFFFFF;
 }
 p {
     margin-bottom: 15px;
@@ -308,4 +322,40 @@ p {
     justify-content: center;
     align-content: center;
     cursor: pointer;
+    margin-right: 5px;
+}
+
+.simple-div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox-div {
+    margin-top: 4%;
+}
+
+.genre-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 145px;
+    height: 40px;
+    background-color: #A259FF;
+    border-radius: 15px;
+    margin: 3px;
+    margin-bottom: 10px;
+}
+
+.top-bar {
+    border-top: 2px solid #ecf0f1;
+    width: 100%;
+}
+
+.three-genres-div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }

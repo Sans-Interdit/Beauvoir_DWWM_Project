@@ -1,12 +1,13 @@
 from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
+import numpy as np
 
 client = QdrantClient(
     url="http://localhost:6333",
     api_key= "test",
 )
 COLLECTION_NAME = "works"
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
 model.to('cuda')
 
 def searchWorks(criterias):
@@ -19,7 +20,9 @@ def searchWorks(criterias):
         with_vectors=True,
         limit=50
     )
-    
+    for hit in hits.points:
+        score = hit.score  # Remplacez 'score' par l'attribut correct si nécessaire
+        print(f"Point: {hit.payload["title"]}, Score: {score}")
     results = [point.payload for point in hits.points]
 
     return results
@@ -31,10 +34,10 @@ def create_prefetch(criterias):
         "key_words",
     ]
 
-    # criterias = {
-    #     "key_words": ["arrogant", "warrior", "god"],
-    #     "format": "film",
-    # }
+    criterias = {
+        "key_words": ["arrogant", "warrior", "god"],
+        "genre": ["Documentary", "Science Fiction"]
+    }
 
     filter_value = None
 
@@ -44,7 +47,7 @@ def create_prefetch(criterias):
             should=[
                 models.FieldCondition(
                     key="format",
-                    match=models.MatchValue(value=format)
+                    match=models.MatchValue(value=format, boost=2.0)
                 )
             ]
         )
@@ -54,7 +57,7 @@ def create_prefetch(criterias):
         field = criterias.get(possible_field)
         if field:
             if possible_field == "key_words":
-                criteria_vectors["synopsis"] = model.encode(" ".join(field))
+                criteria_vectors["synopsis"] = np.mean(model.encode(field), axis=0)
             else:
                 criteria_vectors[possible_field] = model.encode(field)
 

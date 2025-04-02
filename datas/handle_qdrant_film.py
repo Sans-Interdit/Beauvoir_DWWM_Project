@@ -53,7 +53,7 @@ def encode_works(works):
 if __name__ == "__main__":
     create_collection()
 
-    with open("datas/film_translated.csv", mode="r", encoding="utf-8") as file:
+    with open("datas/film_translated_subset.csv", mode="r", encoding="utf-8") as file:
         film_liste = list(csv.DictReader(file))
 
     start = 0

@@ -36,11 +36,9 @@ import asyncio
 
 translator = Translator()
 
-df = pd.read_csv("datas/anime.csv", sep=",", quotechar='"', quoting=1)
+df = pd.read_csv("datas/film_translated_subset.csv", sep=",", quotechar='"', quoting=1)
 
-# Sélectionner 1/1000 du DataFrame
-subset_size = len(df) // 2
-print(subset_size)
+subset_size = len(df)
 df_subset = df.iloc[:subset_size]
 
 df_subset.loc[:, "synopsis"] = df_subset["synopsis"].fillna("").astype(str)
@@ -99,3 +97,12 @@ asyncio.run(main())
 #     df.to_csv("datas/film.csv", index=False, sep=",", quotechar='"', quoting=1)
 # except FileNotFoundError:
 #     print("Erreur : Le fichier 'datas/film_original.csv' est introuvable. Téléchargez le sur Kaggle")
+
+
+
+
+# df = pd.read_csv("datas/film_translated.csv", sep=",", quotechar='"', quoting=1)
+
+# df_subset = df.iloc[:21447]
+
+# df_subset.to_csv("datas/film_translated_subset.csv", index=False, sep=",", quotechar='"', quoting=1)

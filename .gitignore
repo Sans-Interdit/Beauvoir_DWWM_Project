@@ -4,6 +4,7 @@ back/.env
 film_original.csv
 film.csv
 film_translated.csv
+film_translated_subset.csv
 anime.csv
 anime_translated.csv
 assets

@@ -17,11 +17,10 @@ Réponds par oui si l'utilisateur demande une recommendation de contenu audiovis
 def determine_criterias(prompt): # - \"ranking\": float (entre 0 et 1)\n- \"genres\": list[str]\n- \"episodes\": int (nombre d'épisodes total)\n- \"status\": str\n- (étape de publication : en cours, terminé, etc...) 
     metaprompt = {
         "role": "system",
-"content": """Votre rôle est de déterminer les critères recherchés par l'utilisateur dans son message."
-Ne fait jamais par toi même la recommendation.
+"content": """Votre rôle est de déterminer les critères recherchés par l'utilisateur dans son message.
+Ne déduit jamais l'oeuvre recherché.
 La réponse doit être un JSON parfaitement valide, sans rien d'autre.
 Ce JSON sera composé d'un, deux ou trois critères uniquement si pertinents.
- 
 ***Critères : 
  - \"title\": str(Titre de L'oeuvre recherché explicitement mentionné)
  - \"format\": str (le type d'oeuvres : anime, série, film)
