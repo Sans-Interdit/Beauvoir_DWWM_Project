@@ -2,6 +2,7 @@ from qdrant_client import models
 from back.recommend import client, COLLECTION_NAME, model
 import csv
 
+
 def create_collection():
     if client.collection_exists(COLLECTION_NAME):
         confirmation = input("Are you sure you want to recreate the collection? [y/N]")
@@ -15,7 +16,7 @@ def create_collection():
     vector_names = [
         "title",
         "synopsis",
-        ]
+    ]
 
     client.create_collection(
         collection_name=COLLECTION_NAME,
@@ -28,13 +29,18 @@ def create_collection():
         },
     )
 
+
 def encode_works(works):
     titles = [work["title"] for work in works]
     synopses = [work["synopsis"] for work in works]
 
     # Encodage par lot (batch processing)
-    encoded_titles = model.encode(titles, batch_size=32, device='cuda', convert_to_numpy=True)
-    encoded_synopses = model.encode(synopses, batch_size=32, device='cuda', convert_to_numpy=True)
+    encoded_titles = model.encode(
+        titles, batch_size=32, device="cuda", convert_to_numpy=True
+    )
+    encoded_synopses = model.encode(
+        synopses, batch_size=32, device="cuda", convert_to_numpy=True
+    )
 
     # Construction des objets PointStruct
     encoded_works = [
@@ -47,7 +53,6 @@ def encode_works(works):
     ]
 
     return encoded_works
-
 
 
 if __name__ == "__main__":
@@ -66,7 +71,9 @@ if __name__ == "__main__":
         points = encode_works(batch)
         print(f"Uploading {len(points)} points")
         try:
-            response = client.upload_points(collection_name=COLLECTION_NAME, points=points)
+            response = client.upload_points(
+                collection_name=COLLECTION_NAME, points=points
+            )
             print(f"Upload successful for batch {i // step}: {response}")
         except Exception as e:
             print(f"Error uploading points: {e}")

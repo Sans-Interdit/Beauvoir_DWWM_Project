@@ -19,18 +19,19 @@ CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
 if __name__ == "__main__":
     app.run(debug=True)
 
+
 @app.route("/chat", methods=["POST"])
 def chat():
     """
-    Gère les interactions utilisateur avec le chatbot.
-    Vérifie la clé API, stocke le message, détermine s'il s'agit d'une recommandation,
-    Récupère les recommandations si nécessaire et génère une réponse via Ollama.
+    Handles user interactions with the chatbot.
+    Checks the API key, stores the message, determines if it's a recommendation request,
+    retrieves recommendations if needed, and generates a response via Ollama.
     """
     api_key_send = request.headers.get("X-API-KEY")
     print(api_key_send, os.getenv("API_KEY"))
     if api_key_send != os.getenv("API_KEY"):
         return jsonify({"error": "Unauthorized access"}), 401
-    
+
     userMessage = request.json.get("message")
     id = request.json.get("id")
 
@@ -40,28 +41,33 @@ def chat():
 
     works = None
 
-    prompt = {"role":"user", "content": userMessage}
+    prompt = {"role": "user", "content": userMessage}
 
-    is_about_reco = determine_prompt_type(prompt).lower() == "oui"
-    
+    is_about_reco = (
+        determine_prompt_type(prompt).lower() == "oui"
+    )  # == Does the user want a recommendation ?
+
     if is_about_reco:
         conv = session.query(Conversation).filter_by(id_conversation=id).first()
-        criterias = determine_criterias(prompt)
+        criterias = determine_criterias(
+            prompt
+        )  # Determines the searching criterias of the user from his prompt
         try:
             criterias = json.loads(criterias)
         except json.JSONDecodeError:
-            return jsonify({"error": "Error in determine_criterias. Invalid JSON format"}), 400
-        
-        works = searchWorks(criterias)
+            return (
+                jsonify({"error": "Error in determine_criterias. Invalid JSON format"}),
+                400,
+            )
 
-        reco = Recommendation(id_conversation=id, oeuvres=works)
-        conv.recommendation = reco
+        works = searchWorks(
+            criterias
+        )  # Get the 50 best recommendations from the Qdrant database using the criterias
+
+        conv.recommendation.oeuvres = works
 
     response = ollama.chat(
-        model="DWWM",
-        stream=False,
-        messages=[prompt],
-        options={"temperature": 0.3}
+        model="DWWM", stream=False, messages=[prompt], options={"temperature": 0.3}
     )
 
     response = response["message"]["content"]
@@ -76,55 +82,65 @@ def chat():
 @app.route("/login", methods=["POST"])
 def login():
     """
-    Authentifie un utilisateur avec son email et son mot de passe.
-    Retourne un token JWT si les identifiants sont corrects.
+    Authenticates a user using their email and password.
+    Returns a JWT token if the credentials are valid.
     """
     api_key_send = request.headers.get("X-API-KEY")
     if api_key_send != os.getenv("API_KEY"):
         return jsonify({"error": "Unauthorized access"}), 401
-    
+
     email = request.json.get("email")
     password = request.json.get("password")
 
-    password_hashed = password.encode('utf-8')
+    password_hashed = password.encode("utf-8")
     account = session.query(Account).filter_by(email=email).first()
-    if account and bcrypt.checkpw(password_hashed, account.password.encode('utf-8')):
+    if account and bcrypt.checkpw(password_hashed, account.password.encode("utf-8")):
         return get_logged(account)
     else:
         return jsonify({"error": "Invalid credentials"}), 401
-    
+
+
 def get_logged(account):
     """
-    Génère un token JWT pour un compte utilisateur authentifié.
+    Generates a JWT token for an authenticated user account.
     """
     payload = {
-        'id': account.id_account,
-        'email': account.email,
-        'exp': datetime.datetime.now() + datetime.timedelta(hours=1)
+        "id": account.id_account,
+        "email": account.email,
+        "exp": datetime.datetime.now() + datetime.timedelta(hours=1),
     }
-    
-    token = jwt.encode(payload, os.getenv("HASH_KEY"), algorithm='HS256')
+
+    token = jwt.encode(payload, os.getenv("HASH_KEY"), algorithm="HS256")
     return jsonify({"token": token}), 200
+
 
 @app.route("/register", methods=["POST"])
 def register():
     """
-    Inscrit un nouvel utilisateur avec un email et un mot de passe haché.
-    Retourne un token JWT après l'inscription.
+    Registers a new user with an email and a hashed password.
+    Returns a JWT token upon successful registration.
     """
     email = request.json.get("email")
-    password = request.json.get('password')
+    password = request.json.get("password")
     age = request.json.get("age")
-    country = request.json.get('country')
-    gender = request.json.get('gender')
+    country = request.json.get("country")
+    gender = request.json.get("gender")
     try:
         account = session.query(Account).filter_by(email=email).first()
         if account:
             return jsonify({"message": "Email already used"}), 400
 
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        
-        new_account = Account(email=email, password=hashed_password, age=age, country=country, gender=gender)
+        hashed_password = bcrypt.hashpw(
+            password.encode("utf-8"), bcrypt.gensalt()
+        ).decode("utf-8")
+
+        new_account = Account(
+            email=email,
+            password=hashed_password,
+            age=age,
+            country=country,
+            gender=gender,
+        )
         session.add(new_account)
         session.commit()
     except Exception as e:
@@ -132,17 +148,19 @@ def register():
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
     return get_logged(new_account)
 
+
 def token_required(f):
     """
-    Décorateur pour exiger une authentification par token JWT.
-    Vérifie la validité et l'expiration du token.
+    Decorator that requires JWT authentication.
+    Validates the token and checks for expiration.
     """
+
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.headers.get("Authorisation")
         if not token:
             return jsonify({"error": "Token is missing"}), 401
-        
+
         try:
             data = jwt.decode(token, os.getenv("HASH_KEY"), algorithms=["HS256"])
             request.user_id = data["id"]
@@ -155,46 +173,60 @@ def token_required(f):
 
     return decorated
 
+
 @app.route("/historic", methods=["POST"])
 @token_required
 def historic():
     """
-    Récupère l'historique des conversations d'un utilisateur authentifié.
+    Retrieves the conversation history of an authenticated user.
     """
     account = session.query(Account).filter_by(id_account=request.user_id).first()
     conversations = [conv.to_dict() for conv in account.conversations]
     return jsonify({"data": conversations}), 200
 
+
 @app.route("/newconv", methods=["POST"])
 @token_required
 def newConv():
     """
-    Crée une nouvelle conversation pour un utilisateur authentifié.
+    Creates a new conversation for an authenticated user.
     """
     account = session.query(Account).filter_by(id_account=request.user_id).first()
 
     nbr = len(account.conversations) + 1
-    new_conversation = Conversation(name=f"Conversation {nbr}", id_account=account.id_account)
+    new_conversation = Conversation(
+        name=f"Conversation {nbr}", id_account=account.id_account
+    )
     session.add(new_conversation)
     session.commit()
 
-    new_recommendation = Recommendation(id_conversation=new_conversation.id_conversation, oeuvres=[])
+    new_recommendation = Recommendation(
+        id_conversation=new_conversation.id_conversation, oeuvres=[]
+    )
     session.add(new_recommendation)
     session.commit()
 
-    new_message = Message(id_conversation=new_conversation.id_conversation, content="Bonjour, comment puis-je vous aider aujourd'hui?")
+    new_message = Message(
+        id_conversation=new_conversation.id_conversation,
+        content="Bonjour, comment puis-je vous aider aujourd'hui?",
+    )
     session.add(new_message)
     session.commit()
 
-    a = session.query(Conversation).filter_by(id_conversation=new_conversation.id_conversation).first()
+    a = (
+        session.query(Conversation)
+        .filter_by(id_conversation=new_conversation.id_conversation)
+        .first()
+    )
     print(a.recommendation)
     return jsonify({"id": new_conversation.id_conversation}), 200
+
 
 @app.route("/suppressconv", methods=["DELETE"])
 @token_required
 def suppressconv():
     """
-    Supprime une conversation d'un utilisateur authentifié.
+    Deletes a conversation for an authenticated user.
     """
     id = request.json.get("id")
     conversation = session.query(Conversation).filter_by(id_conversation=id).first()
@@ -206,11 +238,12 @@ def suppressconv():
 
     return jsonify({"error": "Conversation not found or access refused"}), 404
 
+
 @app.route("/suppressacc", methods=["DELETE"])
 @token_required
 def suppressacc():
     """
-    Supprime une conversation d'un utilisateur authentifié.
+    Deletes an authenticated user's account.
     """
     id = request.user_id
     account = session.query(Account).filter_by(id_account=id).first()
@@ -222,23 +255,35 @@ def suppressacc():
 
     return jsonify({"error": "Account not found or access refused"}), 404
 
+
 @app.route("/getuserinfos", methods=["GET"])
 @token_required
 def getinfos():
     """
-    Récupère les informations d'un utilisateur authentifié.
+    Retrieves information about an authenticated user.
     """
     account = session.query(Account).filter_by(id_account=request.user_id).first()
     if account:
-        return jsonify({"email": account.email, "age": account.age, "country": account.country, "gender": account.gender}), 200
+        return (
+            jsonify(
+                {
+                    "email": account.email,
+                    "age": account.age,
+                    "country": account.country,
+                    "gender": account.gender,
+                }
+            ),
+            200,
+        )
     else:
         return jsonify({"error": "User not found"}), 404
+
 
 @app.route("/addgenre", methods=["POST"])
 @token_required
 def addgenre():
     """
-    Crée un genre d'un utilisateur authentifié.
+    Adds a genre for an authenticated user.
     """
     id = request.user_id
     name = request.json.get("name")
@@ -246,32 +291,39 @@ def addgenre():
     account = session.query(Account).filter_by(id_account=id).first()
     if not account:
         return jsonify({"error": "User not found"}), 404
-    
+
     genre = session.query(Genre).filter_by(name=name).first()
     if not genre:
         return jsonify({"error": "Genre not found"}), 404
-    
+
     if genre not in account.genres:
         account.genres.append(genre)
         session.commit()
-        return jsonify({"message": "Genre added successfully", "id": genre.id_genre}), 201
+        return (
+            jsonify({"message": "Genre added successfully", "id": genre.id_genre}),
+            201,
+        )
     else:
         return jsonify({"message": "Genre already associated with user"}), 200
+
 
 @app.route("/suppressgenre", methods=["DELETE"])
 @token_required
 def suppressgenre():
-    """
-    Supprime un genre d'un utilisateur authentifié.
+    """Q
+    Deletes a genre for an authenticated user.
     """
     id = request.user_id
     id_genre = request.json.get("id")
     account = session.query(Account).filter_by(id_account=id).first()
     if account:
         print(account.genres)
-        genre = session.query(Genre).join(Account.genres).filter(
-                Genre.id_genre == id_genre, Account.id_account == id
-            ).first()        
+        genre = (
+            session.query(Genre)
+            .join(Account.genres)
+            .filter(Genre.id_genre == id_genre, Account.id_account == id)
+            .first()
+        )
         print(genre)
         if genre:
             session.delete(genre)

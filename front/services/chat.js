@@ -7,9 +7,11 @@ const button_box = document.getElementById("buttons-box")
 let recoBox = document.getElementById("reco-box");
 
 document.addEventListener('DOMContentLoaded', async function() {
+    // Retrieve stored authentication token
     const token = localStorage.getItem("authToken")
 
     if (token) {
+        // Fetch user information using the stored token
         fetch('http://localhost:5000/getuserinfos', {
             method: 'GET',
             headers: {
@@ -26,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         })
         .then(response => {
+            // Update user profile section with fetched data
             document.getElementById("email-profile").textContent = response.email;
             document.getElementById("age-profile").textContent = response.age;
             document.getElementById("country-profile").textContent = response.country;
@@ -35,11 +38,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.error('Fetch error:', error);
         });
 
+        // Create profile button dynamically
         const profile_button = document.createElement("button");
         profile_button.classList.add("menu-button");
         profile_button.id = "profile-button";
         profile_button.innerHTML = '<img src="../../assets/user.png" alt="History" width="50" draggable="false">';
         profile_button.addEventListener("click", () => {
+            // Toggle profile sidebar visibility
             sidebar_profile.classList.toggle('closed');
         });
         button_box.appendChild(profile_button)
@@ -50,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         histo_button.innerHTML = '<img src="../../assets/speech-bubble.png" alt="History" width="50" draggable="false">';
         histo_button.addEventListener("click", () => {
             sidebar_histo.classList.toggle('closed');
-        });        
+        });
         button_box.appendChild(histo_button)
 
         fetch('http://localhost:5000/historic', {
@@ -71,12 +76,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         })
         .then(response => {
             datas = response.data;
+            // Check if URL has conversation ID
             const params = new URLSearchParams(window.location.search);
             const conversationId = params.get("conversation");
 
             const chat_box = document.getElementById('chat-box');
-    
+
             if (conversationId) {
+                // Load the specified conversation
                 conversation = datas.find(conv => conv.id_conversation == conversationId);
                 if (conversation) {
                     let bot = true;
@@ -101,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
             else {
+                // If no conversation, start a new one or load the most recent
                 if (datas.length) {
                     const newParams = new URLSearchParams();
                     newParams.set("conversation", datas[datas.length-1].id_conversation);
@@ -110,7 +118,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                     newConv(token)
                 }
             }
-    
+
+            // Add "New Conversation" button in sidebar
             let convRow = document.createElement("div");
             convRow.classList.add("button-conv");
             convRow.textContent = "Nouvelle Conversation";
@@ -119,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             sidebar_histo.appendChild(convRow);
             for (const data of datas) {
-                let convRow = document.createElement("div");                
+                let convRow = document.createElement("div");
                 convRow.style.display = "flex";
                 convRow.style.alignItems = "center"
                 convRow.style.justifyContent = "center"
@@ -135,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
                 convRow.appendChild(conv)
 
-                
+
                 let supprConv = document.createElement("div");
                 supprConv.classList.add("suppr-conv");
                 supprConv.innerHTML = '<img src="../../assets/bin.png" alt="History" width="40" draggable="false">';
@@ -166,10 +175,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     });
                 });
                 convRow.appendChild(supprConv)
-
                 sidebar_histo.appendChild(convRow);
-
-
             }
         })
         .catch (error => {
@@ -183,10 +189,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         button.innerHTML = '<img src="../../assets/login.png" alt="Connexion" width="50" draggable="false">';
         button.addEventListener("click", () => {
             sidebar_login.classList.toggle('closed');
-        });        
+        });
         button_box.appendChild(button)
     }
-});  
+});
 
 function disconnect() {
     localStorage.clear();
@@ -228,18 +234,19 @@ document.getElementById("user-input").addEventListener("keypress", function(even
 async function sendMessage() {
     let userInput = document.getElementById("user-input").value;
     if (userInput.trim() === "") return;
-    
+
+    // Clear input field
     document.getElementById("user-input").value = "";
 
     let chatBox = document.getElementById("chat-box");
 
-    // Affichage du message de l'utilisateur
+    // Display user's message
     let userMessage = document.createElement("div");
     userMessage.classList.add("message", "user");
     userMessage.textContent = userInput;
     chatBox.appendChild(userMessage);
 
-    // Réponse du chatbot
+    // Get bot response from backend
     let botMessage = document.createElement("div");
     botMessage.classList.add("message", "bot");
     response = await getBotResponse(userInput);
@@ -256,7 +263,6 @@ async function sendMessage() {
     }
     chatBox.appendChild(botMessage);
 
-    // Défilement automatique vers le bas
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
@@ -277,7 +283,7 @@ async function getBotResponse(input) {
             }),
             mode: "cors"
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -295,7 +301,7 @@ function toggleMenu() {
 const CGUButton = document.getElementById('CGU-button');
 const infoButton = document.getElementById('info-button');
 
-document.addEventListener("click", function(event) {
+document.addEventListener("click", function(event) { // Close sidebars when clicking outside
     const menu = document.getElementById("menu");
     const button = document.querySelector("button");
     const loginButton = document.getElementById('login-button');
@@ -327,7 +333,6 @@ document.addEventListener("click", function(event) {
     }
 });
 
-// Toggle de la classe "closed" au clic sur le bouton
 CGUButton.addEventListener('click', function(event) {
     sidebar_CGU.classList.toggle('closed');
 });
@@ -337,6 +342,7 @@ infoButton.addEventListener('click', function(event) {
 });
 
 document.getElementById("toggle-form").addEventListener("click", function() {
+    // Switch between login and registration form states
     const title = document.getElementById("form-title");
     const form = document.getElementById("auth-form");
     const authDiv = document.getElementById("auth-div");
@@ -348,8 +354,7 @@ document.getElementById("toggle-form").addEventListener("click", function() {
         authDiv.style.display = "flex";
         button.textContent = "S'inscrire";
         this.textContent = "Déjà inscrit ? Se connecter";
-        
-        // Ajout des attributs required pour l'inscription
+
         document.getElementById("confirm-password").setAttribute("required", "");
         document.getElementById("age-input").setAttribute("required", "");
         document.getElementById("country-input").setAttribute("required", "");
@@ -367,14 +372,13 @@ document.getElementById("toggle-form").addEventListener("click", function() {
         authDiv.style.display = "none";
         button.textContent = "Se connecter";
         this.textContent = "Pas encore inscrit ? S'inscrire";
-        
-        // Retrait des attributs required pour la connexion
+
         document.getElementById("confirm-password").removeAttribute("required");
         document.getElementById("age-input").removeAttribute("required");
         document.getElementById("country-input").removeAttribute("required");
         document.getElementById("gender-male").removeAttribute("required");
         document.getElementById("terms").removeAttribute("required");
-    }    
+    }
 });
 
 document.getElementById("auth-form").addEventListener("submit", function(event) {
@@ -409,7 +413,7 @@ document.getElementById("auth-form").addEventListener("submit", function(event) 
 
     fetch(`http://localhost:5000/${isRegistering ? "register": "login"}`, {
         method: "POST",
-        headers: { 
+        headers: {
             "Content-Type": "application/json" ,
             'X-API-KEY': CONFIG.API_KEY,
         },
@@ -423,7 +427,6 @@ document.getElementById("auth-form").addEventListener("submit", function(event) 
         }
     })
     .then(response => {
-        // Sauvegarder le token dans le localStorage
         if (response.token) {
             localStorage.setItem("authToken", response.token);
         }
@@ -492,7 +495,7 @@ const countries = [
     "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu",
     "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
   ];
-  
+
 const datalistCountries = document.getElementById("countries");
 countries.forEach(country => {
     let option = document.createElement("option");
@@ -500,8 +503,8 @@ countries.forEach(country => {
     datalistCountries.appendChild(option);
 });
 
-genres = ["Supernatural", "Suspense", "Slice of Life", 'Gourmet', 'Avant Garde', 'Action', 'Science Fiction', 'Adventure', 
-        'Drama', 'Crime', 'Thriller', 'Fantasy', 'Comedy', 'Romance', 'Western', 'Mystery', 'War', 'Animation', 
+genres = ["Supernatural", "Suspense", "Slice of Life", 'Gourmet', 'Avant Garde', 'Action', 'Science Fiction', 'Adventure',
+        'Drama', 'Crime', 'Thriller', 'Fantasy', 'Comedy', 'Romance', 'Western', 'Mystery', 'War', 'Animation',
         'Family', 'Horror', 'Music', 'History', 'TV Movie', 'Documentary']
 
 const datalistGenres = document.getElementById("genres");

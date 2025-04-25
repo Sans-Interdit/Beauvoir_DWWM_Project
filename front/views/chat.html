@@ -4,27 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot Simple</title>
+    <!-- Link to external CSS for styling -->
     <link rel="stylesheet" href="chat.css">
 </head>
 <body>
+
+    <!-- Main button container: top and bottom -->
     <div class="all-buttons">
-        <div id="buttons-box" class="up">        
-        </div>
-        <div class="down">        
-            <button class="menu-button" id="CGU-button"><img src="../../assets/terms-and-conditions.png" alt="Terms" width="50", draggable="false"></button>
-            <button class="menu-button" id="info-button"><img src="../../assets/information.png" alt="Terms" width="50", draggable="false"></button>*
+        <div id="buttons-box" class="up"></div>
+        <div class="down">
+            <!-- Button to open Terms of Use sidebar -->
+            <button class="menu-button" id="CGU-button">
+                <img src="../../assets/terms-and-conditions.png" alt="Terms" width="50" draggable="false">
+            </button>
+            <!-- Button to open Contact Information sidebar -->
+            <button class="menu-button" id="info-button">
+                <img src="../../assets/information.png" alt="Info" width="50" draggable="false">
+            </button>
         </div>
     </div>
+
+    <!-- Sidebar for user authentication (login/register) -->
     <div class="sidebar closed" id="sidebar-login">
         <h1 id="form-title">Connexion</h1>
         <form id="auth-form">
             <input type="email" id="email" placeholder="Email" class="input-login" required>
             <input type="password" id="password" placeholder="Mot de passe" class="input-login" required>
             <div id="auth-div">
+                <!-- Additional fields for registration -->
                 <input type="password" id="confirm-password" class="input-login" placeholder="Confirmer le mot de passe">
                 <input type="number" id="age-input" class="input-login" placeholder="Entrez votre âge" min="0">
                 <input list="countries" id="country-input" class="input-login" placeholder="Entrez votre pays">
                 <datalist id="countries"></datalist>
+                <!-- Gender selection -->
                 <div class="simple-div">
                     <label for="gender-male">
                         <input type="radio" id="gender-male" name="gender" value="Homme" class="input-login"> Homme
@@ -45,24 +57,15 @@
         </form>
         <p class="toggle" id="toggle-form">Pas encore inscrit ? S'inscrire</p>
     </div>
+
+    <!-- Sidebar to display user profile information -->
     <div class="sidebar closed" id="sidebar-profile">
         <h1>Profil</h1>
-        <div class="simple-div">
-            <h2 style="white-space: pre;">Email : </h2>
-            <h2 id="email-profile">...</h2>
-        </div>
-        <div class="simple-div">
-            <h2 style="white-space: pre;">Age : </h2>
-            <h2 id="age-profile">...</h2>
-        </div>
-        <div class="simple-div">
-            <h2 style="white-space: pre;">Pays : </h2>
-            <h2 id="country-profile">...</h2>
-        </div>
-        <div class="simple-div">
-            <h2 style="white-space: pre;">Genre : </h2>
-            <h2 id="gender-profile">...</h2>
-        </div>
+        <div class="simple-div"><h2>Email : </h2><h2 id="email-profile">...</h2></div>
+        <div class="simple-div"><h2>Age : </h2><h2 id="age-profile">...</h2></div>
+        <div class="simple-div"><h2>Pays : </h2><h2 id="country-profile">...</h2></div>
+        <div class="simple-div"><h2>Genre : </h2><h2 id="gender-profile">...</h2></div>
+
         <h1>Genres préférés</h1>
         <div class="simple-div genres-div">
             <input list="genres" id="genres-input" class="input-login" placeholder="Entrez vos genres préférés">
@@ -71,48 +74,52 @@
         </div>
         <div id="genres-list"></div>
         <div class="simple-div top-bar">
-            <button class="button" id="disconection-button" onclick="disconnect()" style="margin: 2%;">Se déconnecter</button>
-            <button class="button" id="suppr-acc-button" onclick="supprAcc()" style="margin: 2%;">Supprimer son compte</button>
+            <button class="button" id="disconection-button" onclick="disconnect()">Se déconnecter</button>
+            <button class="button" id="suppr-acc-button" onclick="supprAcc()">Supprimer son compte</button>
         </div>
     </div>
+
+    <!-- Sidebar for displaying past conversations -->
     <div class="sidebar closed" id="sidebar-histo">
         <h1>Conversation</h1>
     </div>
+
+    <!-- Sidebar for displaying Terms of Use -->
     <div class="sidebar closed" id="sidebar-CGU">
         <div class="CGU-container">
             <h1>Conditions Générales d'Utilisation (CGU)</h1>
-    
+
             <h2>1. Objet</h2>
             <p>Les présentes Conditions Générales d'Utilisation (CGU) définissent les modalités d'accès et d'utilisation du site ScreenQuest (ci-après « le Site »), créé par Yanis Bouchilloux dans le cadre de son projet d'obtention du titre RNCP. Le Site propose un chatbot capable de fournir des recommandations de séries, films et animés.</p>
-    
+
             <h2>2. Acceptation des CGU</h2>
             <p>En accédant et en utilisant le Site, l'utilisateur accepte sans réserve les présentes CGU. Si l'utilisateur n'accepte pas ces conditions, il lui est demandé de ne pas utiliser le Site.</p>
-    
+
             <h2>3. Accès au Site</h2>
             <p>
                 <strong>Utilisation gratuite :</strong> L'accès au Site est gratuit.<br>
                 <strong>Conditions d'accès :</strong> L'utilisateur s'engage à ne pas perturber l'accès au Site, à respecter les fonctionnalités mises à disposition et à ne pas procéder à des tentatives de contournement de la sécurité.<br>
                 <strong>Maintenance et indisponibilité :</strong> Le propriétaire se réserve le droit de suspendre ou d'interrompre l'accès au Site pour des raisons de maintenance ou d'amélioration, sans que cela ne puisse engager sa responsabilité.
             </p>
-    
+
             <h2>4. Propriété Intellectuelle</h2>
             <p>
                 <strong>Contenu du Site :</strong> L'ensemble des éléments du Site (textes, images, logos, design, code source, etc.) est protégé par la législation sur la propriété intellectuelle et reste la propriété exclusive de Yanis Bouchilloux ou de ses partenaires le cas échéant.<br>
                 <strong>Utilisation du contenu :</strong> Toute reproduction, représentation ou diffusion, totale ou partielle, du contenu du Site, sans autorisation préalable écrite, est strictement interdite.
             </p>
-    
+
             <h2>5. Fonctionnement du Chatbot</h2>
             <p>
                 <strong>Conseils et recommandations :</strong> Le chatbot proposé a pour vocation de fournir des recommandations de séries, films et animés. Ces recommandations sont données à titre informatif et subjectif.<br>
                 <strong>Responsabilité :</strong> Yanis Bouchilloux ne saurait être tenu responsable des choix ou actions effectués par l'utilisateur suite aux recommandations fournies par le chatbot. L'utilisateur reste maître de ses décisions.
             </p>
-    
+
             <h2>6. Responsabilités</h2>
             <p>
                 <strong>Utilisation conforme :</strong> L'utilisateur s'engage à utiliser le Site conformément aux lois et règlements en vigueur et aux présentes CGU.<br>
                 <strong>Limitation de responsabilité :</strong> En aucun cas, Yanis Bouchilloux ne pourra être tenu responsable des dommages directs ou indirects résultant de l'utilisation ou de l'impossibilité d'utilisation du Site, y compris ceux liés à une interruption de service ou à une modification des contenus.
             </p>
-    
+
             <h2>7. Données Personnelles et Confidentialité</h2>
             <p>
                 <strong>Collecte de données :</strong> Le Site peut collecter des données personnelles (par exemple, pour la gestion d'un compte utilisateur ou pour améliorer le service du chatbot).<br>
@@ -120,40 +127,55 @@
                 <strong>Conservation des données :</strong> Sans action contraire de l'utilisateur, les données collectées sont conservées pour une période n’excédant pas trois ans après le dernier contact avec l’utilisateur, sauf disposition légale contraire.<br>
                 <strong>Sécurité :</strong> Le propriétaire du Site s'engage à mettre en œuvre des moyens techniques et organisationnels appropriés pour assurer la sécurité et la confidentialité des données personnelles.
             </p>
-    
+
             <h2>8. Modifications des CGU</h2>
             <p>Yanis Bouchilloux se réserve le droit de modifier, à tout moment et sans préavis, les présentes CGU afin de les adapter aux évolutions du Site et/ou à la législation en vigueur. Il est conseillé à l'utilisateur de consulter régulièrement la dernière version des CGU.</p>
-    
+
             <h2>9. Droit applicable et litiges</h2>
             <p>Les présentes CGU sont régies par le droit français. En cas de litige relatif à l'interprétation ou à l'exécution des présentes, les tribunaux français seront seuls compétents.</p>
-    
+
             <h2>10. Contact</h2>
             <p>Pour toute question relative aux présentes CGU, l'utilisateur peut contacter Yanis Bouchilloux à l'adresse suivante : <a href="mailto:bouchilloux.yanis@gmail.com">bouchilloux.yanis@gmail.com</a>.</p>
+
+            <h2>11. Sources de données</h2>
+            <p>
+                Ce site utilise des données provenant du jeu de données « Full TMDB Movies Dataset 2024 (1M Movies) » par asaniczka, disponibles sur <a href="https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies" target="_blank" rel="noopener noreferrer">Kaggle</a>, sous licence <a href="https://opendatacommons.org/licenses/by/1.0/" target="_blank" rel="license noopener noreferrer">Open Data Commons Attribution License (ODC-By) v1.0</a>.
+            </p>
         </div>
     </div>
+
+    <!-- Sidebar for contact info -->
     <div class="sidebar closed" id="sidebar-info">
         <h1>Contact</h1>
         <h2>Email : bouchilloux.yanis@gmail.com</h2>
         <h2>Téléphone : 07 70 30 67 53</h2>
     </div>
+
+    <!-- Chat container for user messages and AI responses -->
     <div class="chat-container">
+        <!-- Top menu with links -->
         <div class="menu-container">
-            <div class="menu" id = "menu">
+            <div class="menu" id="menu">
                 <a href="login.html">Log in</a>
                 <a href="#">Change IA</a>
             </div>
         </div>
-        <div id="chat-box">
-            
-        </div>
+        <!-- Box to display conversation -->
+        <div id="chat-box"></div>
+        <!-- Input box to send messages -->
         <div id="sendbox">
             <input type="text" id="user-input" placeholder="Écrivez un message...">
             <button id="sendButton" onclick="sendMessage()">✓</button>
         </div>
     </div>
+
+    <!-- Recommendation box populated by chatbot -->
     <div id="reco-box"></div>
+
+    <!-- External JS libraries and services -->
     <script src="https://unpkg.com/jwt-decode/build/jwt-decode.min.js"></script>
     <script src="../services/config.js"></script>
     <script src="../services/chat.js"></script>
+
 </body>
 </html>

@@ -28,7 +28,6 @@
 #     json.dump(anime_dict, json_file, ensure_ascii=False, indent=4)
 
 
-
 import pandas as pd
 from googletrans import Translator
 import time
@@ -43,9 +42,11 @@ df_subset = df.iloc[:subset_size]
 
 df_subset.loc[:, "synopsis"] = df_subset["synopsis"].fillna("").astype(str)
 
+
 # Fonction asynchrone pour traduire un batch
 async def translate_batch(batch):
     return await translator.translate(batch, src="en", dest="fr")
+
 
 async def main():
     translated_texts = []
@@ -54,8 +55,10 @@ async def main():
     for i in range(0, len(df_subset), batch_size):
         try:
             print(i)
-            batch = df_subset["synopsis"].iloc[i:i+batch_size].tolist()  # Liste des textes à traduire
-            
+            batch = (
+                df_subset["synopsis"].iloc[i : i + batch_size].tolist()
+            )  # Liste des textes à traduire
+
             # Appel asynchrone
             translations = await translate_batch(batch)
 
@@ -69,14 +72,15 @@ async def main():
     df.loc[df.index[:subset_size], "synopsis"] = translated_texts
 
     # Sauvegarde du fichier mis à jour
-    df.to_csv("datas/anime_translated.csv", index=False, sep=",", quotechar='"', quoting=1)
-    
+    df.to_csv(
+        "datas/anime_translated.csv", index=False, sep=",", quotechar='"', quoting=1
+    )
+
     print("Traduction terminée et sauvegardée dans 'datas/anime_translated.csv'.")
+
 
 # Lancer la fonction principale asynchrone
 asyncio.run(main())
-
-
 
 
 # try:
@@ -97,8 +101,6 @@ asyncio.run(main())
 #     df.to_csv("datas/film.csv", index=False, sep=",", quotechar='"', quoting=1)
 # except FileNotFoundError:
 #     print("Erreur : Le fichier 'datas/film_original.csv' est introuvable. Téléchargez le sur Kaggle")
-
-
 
 
 # df = pd.read_csv("datas/film_translated.csv", sep=",", quotechar='"', quoting=1)
