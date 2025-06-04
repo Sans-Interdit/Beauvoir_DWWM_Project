@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, JSON
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, JSON, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -6,7 +6,12 @@ DATABASE_URL = "postgresql://postgres:test@127.0.0.1:5432/postgres"
 
 Base = declarative_base()
 
-
+account_genre = Table(
+    "account_genre",
+    Base.metadata,
+    Column("id_account", ForeignKey("account.id_account"), primary_key=True),
+    Column("id_genre", ForeignKey("genre.id_genre"), primary_key=True),
+)
 class Account(Base):
     __tablename__ = "account"
 
@@ -23,11 +28,11 @@ class Account(Base):
     genres = relationship("Genre", secondary="account_genre", back_populates="accounts")
 
 
-class AccountGenre(Base):
-    __tablename__ = "account_genre"
+# class AccountGenre(Base):
+#     __tablename__ = "account_genre"
 
-    id_account = Column(Integer, ForeignKey("account.id_account"), primary_key=True)
-    id_genre = Column(Integer, ForeignKey("genre.id_genre"), primary_key=True)
+#     id_account = Column(Integer, ForeignKey("account.id_account"), primary_key=True)
+#     id_genre = Column(Integer, ForeignKey("genre.id_genre"), primary_key=True)
 
 
 class Genre(Base):

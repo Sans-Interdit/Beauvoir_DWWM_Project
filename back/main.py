@@ -41,7 +41,7 @@ def chat():
 
     works = None
 
-    prompt = {"role": "user", "content": userMessage}
+    prompt = {"role": "user", "content": userMessage+"/no_think"}
 
     is_about_reco = (
         determine_prompt_type(prompt).lower() == "oui"
@@ -49,9 +49,7 @@ def chat():
 
     if is_about_reco:
         conv = session.query(Conversation).filter_by(id_conversation=id).first()
-        criterias = determine_criterias(
-            prompt
-        )  # Determines the searching criterias of the user from his prompt
+        criterias = determine_criterias(prompt)  # Determines the searching criterias of the user from his prompt
         try:
             criterias = json.loads(criterias)
         except json.JSONDecodeError:
@@ -60,10 +58,8 @@ def chat():
                 400,
             )
 
-        works = searchWorks(
-            criterias
-        )  # Get the 50 best recommendations from the Qdrant database using the criterias
-
+        works = searchWorks(criterias)  # Get the 50 best recommendations from the Qdrant database using the criterias
+        # print(works)
         conv.recommendation.oeuvres = works
 
     response = ollama.chat(
@@ -128,6 +124,7 @@ def register():
     try:
         account = session.query(Account).filter_by(email=email).first()
         if account:
+            print("Email already used")
             return jsonify({"message": "Email already used"}), 400
 
         hashed_password = bcrypt.hashpw(
@@ -154,6 +151,7 @@ def token_required(f):
     Decorator that requires JWT authentication.
     Validates the token and checks for expiration.
     """
+    print("token")
 
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -246,8 +244,8 @@ def suppressacc():
     Deletes an authenticated user's account.
     """
     id = request.user_id
-    account = session.query(Account).filter_by(id_account=id).first()
 
+    account = session.query(Account).filter_by(id_account=id).first()
     if account:
         session.delete(account)
         session.commit()
@@ -263,6 +261,7 @@ def getinfos():
     Retrieves information about an authenticated user.
     """
     account = session.query(Account).filter_by(id_account=request.user_id).first()
+    genres = {e.id_genre : e.name for e in account.genres}
     if account:
         return (
             jsonify(
@@ -271,6 +270,7 @@ def getinfos():
                     "age": account.age,
                     "country": account.country,
                     "gender": account.gender,
+                    "genres": genres,
                 }
             ),
             200,
@@ -286,14 +286,17 @@ def addgenre():
     Adds a genre for an authenticated user.
     """
     id = request.user_id
-    name = request.json.get("name")
-
+    genre = request.json.get("genre")
+    print(genre)
     account = session.query(Account).filter_by(id_account=id).first()
     if not account:
+        print("Account not found")
         return jsonify({"error": "User not found"}), 404
-
-    genre = session.query(Genre).filter_by(name=name).first()
+    all_genres = session.query(Genre.name).all()
+    print([g[0] for g in all_genres])
+    genre = session.query(Genre).filter_by(name=genre).first()
     if not genre:
+        print("Genre not found")
         return jsonify({"error": "Genre not found"}), 404
 
     if genre not in account.genres:
@@ -310,26 +313,22 @@ def addgenre():
 @app.route("/suppressgenre", methods=["DELETE"])
 @token_required
 def suppressgenre():
-    """Q
+    """
     Deletes a genre for an authenticated user.
     """
     id = request.user_id
     id_genre = request.json.get("id")
     account = session.query(Account).filter_by(id_account=id).first()
-    if account:
-        print(account.genres)
-        genre = (
-            session.query(Genre)
-            .join(Account.genres)
-            .filter(Genre.id_genre == id_genre, Account.id_account == id)
-            .first()
-        )
-        print(genre)
-        if genre:
-            session.delete(genre)
-            session.commit()
-            return jsonify({"message": "Genre deleted"}), 200
-        else:
-            return jsonify({"error": "Genre not found"}), 404
-    else:
+    genre = session.query(Genre).filter_by(id_genre=id_genre).first()
+    print(id_genre, genre)
+    if not account or not genre:
         return jsonify({"error": "User not found"}), 404
+    
+    if genre in account.genres:
+        account.genres.remove(genre)  # supprime l'association
+        session.commit()
+        return jsonify({"message": "Genre removed from user"}), 200
+    
+    else:
+        return jsonify({"error": "Genre not associated with user"}), 404
+

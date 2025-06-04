@@ -16,8 +16,8 @@ def determine_prompt_type(prompt):
     """
     metaprompt = {
         "role": "system",
-        "content": f"""Votre rôle est de determiner si le message de l'utilisateur souhaite une recommendation d'oeuvres audiovisuels.
-Réponds par oui si l'utilisateur demande une recommendation d'un anime, d'un film ou d'une série, et par non sinon.""",
+        "content": f"""Votre rôle est de determiner si le message de l'utilisateur est une demande de recommendation d'oeuvres audiovisuels.
+Réponds "oui" si l'utilisateur demande une recommendation d'un anime, d'un film ou d'une série, et "non" sinon.""",
     }
     response = ollama.chat(
         model="french_qwen",
@@ -26,7 +26,7 @@ Réponds par oui si l'utilisateur demande une recommendation d'un anime, d'un fi
         options={"temperature": 0.3},
     )
 
-    # print(response["message"]["content"])
+    print(response["message"]["content"])
     return response["message"]["content"]
 
 
@@ -66,5 +66,5 @@ Ne détermine \"title\" que si l'utilisateur le demande explicitement.""",
         messages=[metaprompt, prompt],
         options={"temperature": 0},
     )
-    # print(response["message"]["content"])
+    print(response["message"]["content"])
     return response["message"]["content"]

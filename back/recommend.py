@@ -6,7 +6,7 @@ client = QdrantClient(
     url="http://localhost:6333",
     api_key="test",
 )
-COLLECTION_NAME = "works"
+COLLECTION_NAME = "all_works"
 model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
 model.to("cuda")
 
@@ -35,7 +35,7 @@ def searchWorks(criterias):
     )
     for hit in hits.points:
         score = hit.score  # Remplacez 'score' par l'attribut correct si nécessaire
-        # print(f"Point: {hit.payload["title"]}, Score: {score}")
+        print(f"Point: {hit.payload["title"]}, Score: {score}")
     results = [point.payload for point in hits.points]
 
     return results
@@ -65,17 +65,29 @@ def create_prefetch(criterias):
     #     "genre": ["Documentary", "Science Fiction"]
     # }
 
-    filter_value = None
+    filters = []
 
     format = criterias.get("format")
     if format:
-        filter_value = models.Filter(
-            should=[
-                models.FieldCondition(
-                    key="format", match=models.MatchValue(value=format)  # , boost=2.0
-                )
-            ]
+        filters.append(
+            models.FieldCondition(
+                key="format", match=models.MatchValue(value=format)  # , boost=2.0
+            )
         )
+
+    genres = criterias.get("genre")
+    if genres:
+        filters.extend([
+            models.FieldCondition(
+                key="genres", match=models.MatchValue(value=genre.strip())  # , boost=2.0
+            ) for genre in genres
+        ])
+
+    if filters:
+        filter_value = models.Filter(should=filters)
+    else:
+        filter_value = None
+
 
     criteria_vectors = {}
     for possible_field in criteria_fields:

@@ -1,11 +1,11 @@
 # test_prompts.py
-from llm_calls import (
-    determine_prompt_type,
-    determine_criterias,
-)  # Assurez-vous que ce fichier est correct
-import json
-from recommend import client, COLLECTION_NAME, model, searchWorks
-import numpy as np
+# from llm_calls import (
+#     determine_prompt_type,
+#     determine_criterias,
+# )  # Assurez-vous que ce fichier est correct
+# import json
+# from recommend import client, COLLECTION_NAME, model, searchWorks
+# import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -69,22 +69,145 @@ def test_recommendation():
 
 
 if __name__ == "__main__":
-    test_determine_prompt_type1()
-    test_determine_prompt_type2()
-    test_determine_criterias()
-    test_recommendation()
+    # test_determine_prompt_type1()
+    # test_determine_prompt_type2()
+    # test_determine_criterias()
+    # test_recommendation()
 
-    # a = "Kaoruko ""Chaos"" Moeta est une jeune artiste de manga qui a de la chance. Elle veut dessiner des mangas sur les lycéens, mais ses storyboards sont fade, son art sans inspiration et ses locaux faibles. Son éditeur inquiet et exaspéré propose une idée: pousser le chaos pour être plus social. Ainsi, par sa recommandation, le chaos entre dans un dortoir pour les artistes mangas féminins. Elle rencontre bientôt les autres résidents: Tsubasa Katsuki, un artiste de manga Shounen; Ruki Irokawa, qui dessine des mangas érotiques populaires auprès des femmes; et Koyume Koizuka, un artiste shoujo qui, comme le chaos, n'a pas encore été sérialisé. Rencontre rapidement une amitié avec ces filles, le chaos trouve une nouvelle inspiration pour son manga et continue de développer sa créativité.  Comic Girls est une vitrine de la vie quotidienne de ces artistes de mangas. Le chaos pourra-t-il enfin faire ses débuts et devenir sérialisé? Aucune des filles ne le savait, mais elles feront toutes de leur mieux pour s'entraider les autres artistes.  [Écrit par MAL REWRITE]"
-    # c = "La cinquième saison de la franchise Dokan-Kun. Il a été diffusé dans le programme de variétés \"Dejisuta Teens\""
-    # b = "une adolescente mangaka dans un dortoir"
+    from qdrant_client import QdrantClient, models
+    from sentence_transformers import SentenceTransformer
+    import numpy as np
 
-    # va = model.encode(a, batch_size=32, device='cuda', convert_to_numpy=True)
-    # vc = model.encode(c, batch_size=32, device='cuda', convert_to_numpy=True)
-    # vb = model.encode(b, batch_size=32, device='cuda', convert_to_numpy=True)
+    client = QdrantClient(
+        url="http://157.173.120.0:6333",
+        api_key="Tm7oI7DnOI7YYsKqvpIbbjwmONHEGzFY9ozQGo0j8HKqEgV3ZidIFvUvZYLnscZJ",
+    )
+    COLLECTION_NAME = "All_Paris_jobs"
+    model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+    model.to("cuda")
 
-    # similarityb = cosine_similarity([va], [vb])[0][0]
-    # similarityc = cosine_similarity([vc], [vb])[0][0]
+    def searchWorks(criterias):
+        """
+        Searches for audiovisual works matching given criteria in a Qdrant vector database.
+
+        Encodes text-based criteria into vectors and applies optional filtering (e.g. by format).
+        Uses vector similarity to retrieve the most relevant results.
+
+        Args:
+            criterias (dict): A dictionary with criteria such as 'key_words', 'title', or 'format'.
+
+        Returns:
+            list: A list of result payloads (matching works).
+        """
+        prefetch = create_prefetch(criterias)
+        hits = client.query_points(
+            collection_name=COLLECTION_NAME,
+            prefetch=prefetch,
+            query=models.FusionQuery(fusion=models.Fusion.DBSF),
+            with_payload=True,
+            with_vectors=True,
+            limit=50,
+        )
+        for hit in hits.points:
+            score = hit.score  # Remplacez 'score' par l'attribut correct si nécessaire
+            # print(f"Point: {hit.payload["title"]}, Score: {score}")
+        results = [point.payload for point in hits.points]
+
+        return results
+
+
+    def create_prefetch(criterias):
+        """
+        Builds the prefetch object used for querying the Qdrant vector database.
+
+        Encodes fields into vectors using a sentence transformer model and applies filtering
+        if a format is specified. Can return a list of vector-based prefetch objects or
+        include a format-based filter.
+
+        Args:
+            criterias (dict): A dictionary with possible keys: 'title', 'key_words', and 'format'.
+
+        Returns:
+            Union[models.Prefetch, list[models.Prefetch]]: Prefetch query configuration.
+        """
+        criteria_fields = [
+            "title",
+            "key_words",
+        ]
+
+        # criterias = {
+        #     "key_words": ["arrogant", "warrior", "god"],
+        #     "genre": ["Documentary", "Science Fiction"]
+        # }
+
+        filter_value = []
+
+        format = criterias.get("format")
+        if format:
+            filter_value = models.Filter(
+                should=[
+                    models.FieldCondition(
+                        key="format", match=models.MatchValue(value=format)  # , boost=2.0
+                    )
+                ]
+            )
+        genres = criterias.get("genre")
+        if genres:
+            filter_value = models.Filter(
+                should=[
+                    models.FieldCondition(
+                        key="genres", match=models.MatchValue(value=genre.strip())  # , boost=2.0
+                    ) for genre in genres
+                ]
+            )
+
+
+        criteria_vectors = {}
+        for possible_field in criteria_fields:
+            field = criterias.get(possible_field)
+            if field:
+                if possible_field == "key_words":
+                    criteria_vectors["synopsis"] = np.mean(model.encode(field), axis=0)
+                else:
+                    criteria_vectors[possible_field] = model.encode(field)
+
+        if not criteria_vectors:
+            return models.Prefetch(filter=None, limit=50)
+        elif not filter_value:
+            return [
+                models.Prefetch(query=vector_value, using=vector_name, limit=50)
+                for vector_name, vector_value in criteria_vectors.items()
+            ]
+        else:
+            return [
+                models.Prefetch(
+                    query=vector_value, using=vector_name, filter=None, limit=50
+                )
+                for vector_name, vector_value in criteria_vectors.items()
+            ]
+    print(searchWorks({
+            "job_title": ["job dans la data"],
+        }))
+
+    
+    # from sentence_transformers import SentenceTransformer
+    # print("fjisfp")
+
+    # model = SentenceTransformer("shawhin/distilroberta-ai-job-embeddings")
+    # model.to("cuda")
+    # model2 = SentenceTransformer("msmarco-distilbert-base-tas-b")
+    # model2.to("cuda")
+    # print("'iofsoj")
+    # a = "RH"
+    # b = "Chargé des ressources humaines"
+
+    # va = model.encode(a, device='cuda', convert_to_numpy=True)
+    # vb = model.encode(b, device='cuda', convert_to_numpy=True)
+    # aa = model2.encode(a, device='cuda', convert_to_numpy=True)
+    # ab = model2.encode(b, device='cuda', convert_to_numpy=True)
+    # similarity = cosine_similarity([va], [vb])[0, 0]
+    # similarityr = cosine_similarity([aa], [ab])[0, 0]
 
     # # Résultat
-    # print(f"Similarité cosinus entre le texte et les mots-clés: {similarityb:.4f}")
-    # print(f"Similarité cosinus entre le texte et les mots-clés: {similarityc:.4f}")
+    # print(f"Similarité cosinus entre le texte et les mots-clés: {similarity:.4f}")
+    # print(f"Similarité cosinus entre le texte et les mots-clés: {similarityr:.4f}")

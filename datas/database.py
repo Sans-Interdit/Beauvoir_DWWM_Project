@@ -29,58 +29,58 @@
 
 
 import pandas as pd
-from googletrans import Translator
-import time
-import asyncio
+# from googletrans import Translator
+# import time
+# import asyncio
 
-translator = Translator()
+# translator = Translator()
 
-df = pd.read_csv("datas/film_translated_subset.csv", sep=",", quotechar='"', quoting=1)
+# df = pd.read_csv("datas/film_translated_subset.csv", sep=",", quotechar='"', quoting=1)
 
-subset_size = len(df)
-df_subset = df.iloc[:subset_size]
+# subset_size = len(df)
+# df_subset = df.iloc[:subset_size]
 
-df_subset.loc[:, "synopsis"] = df_subset["synopsis"].fillna("").astype(str)
-
-
-# Fonction asynchrone pour traduire un batch
-async def translate_batch(batch):
-    return await translator.translate(batch, src="en", dest="fr")
+# df_subset.loc[:, "synopsis"] = df_subset["synopsis"].fillna("").astype(str)
 
 
-async def main():
-    translated_texts = []
-    batch_size = 50  # Taille du batch
-
-    for i in range(0, len(df_subset), batch_size):
-        try:
-            print(i)
-            batch = (
-                df_subset["synopsis"].iloc[i : i + batch_size].tolist()
-            )  # Liste des textes à traduire
-
-            # Appel asynchrone
-            translations = await translate_batch(batch)
-
-            for translation in translations:
-                translated_texts.append(translation.text)
-
-        except Exception as e:
-            print(f"Exception à l'index {i}: {e}")
-    print(f"taille attendue: {subset_size}, taille obtenue: {len(translated_texts)}")
-
-    df.loc[df.index[:subset_size], "synopsis"] = translated_texts
-
-    # Sauvegarde du fichier mis à jour
-    df.to_csv(
-        "datas/anime_translated.csv", index=False, sep=",", quotechar='"', quoting=1
-    )
-
-    print("Traduction terminée et sauvegardée dans 'datas/anime_translated.csv'.")
+# # Fonction asynchrone pour traduire un batch
+# async def translate_batch(batch):
+#     return await translator.translate(batch, src="en", dest="fr")
 
 
-# Lancer la fonction principale asynchrone
-asyncio.run(main())
+# async def main():
+#     translated_texts = []
+#     batch_size = 50  # Taille du batch
+
+#     for i in range(0, len(df_subset), batch_size):
+#         try:
+#             print(i)
+#             batch = (
+#                 df_subset["synopsis"].iloc[i : i + batch_size].tolist()
+#             )  # Liste des textes à traduire
+
+#             # Appel asynchrone
+#             translations = await translate_batch(batch)
+
+#             for translation in translations:
+#                 translated_texts.append(translation.text)
+
+#         except Exception as e:
+#             print(f"Exception à l'index {i}: {e}")
+#     print(f"taille attendue: {subset_size}, taille obtenue: {len(translated_texts)}")
+
+#     df.loc[df.index[:subset_size], "synopsis"] = translated_texts
+
+#     # Sauvegarde du fichier mis à jour
+#     df.to_csv(
+#         "datas/anime_translated.csv", index=False, sep=",", quotechar='"', quoting=1
+#     )
+
+#     print("Traduction terminée et sauvegardée dans 'datas/anime_translated.csv'.")
+
+
+# # Lancer la fonction principale asynchrone
+# asyncio.run(main())
 
 
 # try:
@@ -108,3 +108,24 @@ asyncio.run(main())
 # df_subset = df.iloc[:21447]
 
 # df_subset.to_csv("datas/film_translated_subset.csv", index=False, sep=",", quotechar='"', quoting=1)
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Recharge ton CSV
+df = pd.read_csv("C:/Users/bouch/Downloads/JobOffer-2025-04-28.csv", sep=",", quotechar='"', quoting=1)
+
+# Garde uniquement les lignes où 'author' est NaN
+df_nan = df[df["author"].isna()]
+
+# (Optionnel) Voir combien de lignes il reste
+print(f"Nombre de lignes restantes : {len(df_nan)}")
+
+# Sauvegarder dans un nouveau fichier
+df_nan.to_csv("C:/Users/bouch/Downloads/JobOffer_nan_only.csv", index=False)

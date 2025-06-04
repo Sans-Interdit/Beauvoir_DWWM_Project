@@ -33,6 +33,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById("age-profile").textContent = response.age;
             document.getElementById("country-profile").textContent = response.country;
             document.getElementById("gender-profile").textContent = response.gender;
+
+            const genresList = response.genres
+            console.log(genresList)
+            for (const id in genresList) {
+                addGenreButton(id, genresList[id])
+            }
         })
         .catch(error => {
             console.error('Fetch error:', error);
@@ -76,7 +82,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         })
         .then(response => {
             datas = response.data;
-            // Check if URL has conversation ID
             const params = new URLSearchParams(window.location.search);
             const conversationId = params.get("conversation");
 
@@ -391,7 +396,6 @@ document.getElementById("auth-form").addEventListener("submit", function(event) 
     const country = document.getElementById("country-input").value;
     const isRegistering = document.getElementById("form-title").textContent === "Inscription";
     const radios = document.querySelectorAll('input[name="gender"]');
-    const checkbox = document.getElementById("checkbox");
 
     function getSelectedGender() {
         for (const radio of radios) {
@@ -403,10 +407,19 @@ document.getElementById("auth-form").addEventListener("submit", function(event) 
     }
 
     const gender = getSelectedGender();
+    
+    if (isRegistering) {
+        const passwordRequirements = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
 
-    if (isRegistering && password !== confirmPassword) {
-        alert("Les mots de passe ne correspondent pas !");
-        return;
+        if (!passwordRequirements.test(password)) {
+            alert("Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            alert("Les mots de passe ne correspondent pas.");
+            return;
+        }
     }
 
     const formData = {email, password, age, country, gender};
@@ -454,9 +467,7 @@ function supprAcc() {
             return Promise.reject("Échec de la requête");
         }
     })
-    .then(response => {
-        disconnect();
-    })
+    .then(response => {disconnect()})
     .catch(error => {
         console.error('Fetch error:', error);
     });
@@ -525,75 +536,86 @@ function addGenre() {
             'Authorisation': localStorage.getItem("authToken")
         },
         body: JSON.stringify({
-            name : genreInput.value
+            genre : genreInput.value
         })
     })
     .then(response => {
-        if (response.status === 200 || response.status === 201) {
+        if (response.status === 201) {
             return response.json()
+        } else if (response.status === 200) {
+            alert("Ce genre a déjà été ajouté")
+            return { alreadyExists: true };
         } else {
             return Promise.reject("Échec de la requête");
         }
     })
     .then(response => {
-        id = response.id
-        console.log(id)
-        const threeGenresDivs = document.getElementsByClassName("three-genres-div")
-        let threeGenresDiv;
-        if (threeGenresDivs.length > 0) {
-            console.log(threeGenresDivs[threeGenresDivs.length - 1].children.length)
-            if (threeGenresDivs[threeGenresDivs.length - 1].children.length > 2) {
-                threeGenresDiv = document.createElement("div")
-                threeGenresDiv.classList.add("three-genres-div")
-            }
-            else {
-                console.log(threeGenresDivs)
-                threeGenresDiv = threeGenresDivs[threeGenresDivs.length - 1]
-            }
+        if (response.alreadyExists) {
+            console.log("genre déjà ajouté")
+        } else {
+            id = response.id
+            console.log("id",id)
+            addGenreButton(id, genreInput.value)
         }
-        else {
-            threeGenresDiv = document.createElement("div")
-            threeGenresDiv.classList.add("three-genres-div")
-        }
-        let genreDiv = document.createElement("div")
-        genreDiv.classList.add("genre-div")
-        let titleGenre = document.createElement("h3")
-        titleGenre.textContent = genreInput.value
-        let supprGenreButton = document.createElement("button")
-        supprGenreButton.classList.add("suppr-conv")
-        supprGenreButton.innerHTML = "<img src='../../assets/bin.png' alt='Supprimer' width='20' draggable='false'>"
-        supprGenreButton.addEventListener("click", () => {
-            fetch('http://localhost:5000/suppressgenre', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-API-KEY': CONFIG.API_KEY,
-                    'Authorisation': localStorage.getItem("authToken")
-                },
-                body: JSON.stringify({
-                    id: id
-                })
-            })
-            .then(response => {
-                if (response.status === 200 || response.status === 201) {
-                    return response.json()
-                } else {
-                    return Promise.reject("Échec de la requête");
-                }
-            })
-            .then(response => {
-                genreDiv.remove();
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-            });
-        });
-        genreDiv.appendChild(titleGenre);
-        genreDiv.appendChild(supprGenreButton);
-        threeGenresDiv.appendChild(genreDiv);
-        listGenres.appendChild(threeGenresDiv);
     })
     .catch(error => {
         console.error('Fetch error:', error);
     });
+}
+
+function addGenreButton(id_genre, name_genre) {
+    const threeGenresDivs = document.getElementsByClassName("three-genres-div")
+    let threeGenresDiv;
+    if (threeGenresDivs.length > 0) {
+        console.log(threeGenresDivs[threeGenresDivs.length - 1].children.length)
+        if (threeGenresDivs[threeGenresDivs.length - 1].children.length > 2) {
+            threeGenresDiv = document.createElement("div")
+            threeGenresDiv.classList.add("three-genres-div")
+        }
+        else {
+            console.log(threeGenresDivs)
+            threeGenresDiv = threeGenresDivs[threeGenresDivs.length - 1]
+        }
+    }
+    else {
+        threeGenresDiv = document.createElement("div")
+        threeGenresDiv.classList.add("three-genres-div")
+    }
+    let genreDiv = document.createElement("div")
+    genreDiv.classList.add("genre-div")
+    let titleGenre = document.createElement("h3")
+    titleGenre.textContent = name_genre
+    let supprGenreButton = document.createElement("button")
+    supprGenreButton.classList.add("suppr-conv")
+    supprGenreButton.innerHTML = "<img src='../../assets/bin.png' alt='Supprimer' width='20' draggable='false'>"
+    supprGenreButton.addEventListener("click", () => {
+        fetch('http://localhost:5000/suppressgenre', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': CONFIG.API_KEY,
+                'Authorisation': localStorage.getItem("authToken")
+            },
+            body: JSON.stringify({
+                id: id_genre
+            })
+        })
+        .then(response => {
+            if (response.status === 200 || response.status === 201) {
+                return response.json()
+            } else {
+                return Promise.reject("Échec de la requête");
+            }
+        })
+        .then(response => {
+            genreDiv.remove();
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+    });
+    genreDiv.appendChild(titleGenre);
+    genreDiv.appendChild(supprGenreButton);
+    threeGenresDiv.appendChild(genreDiv);
+    listGenres.appendChild(threeGenresDiv);
 }

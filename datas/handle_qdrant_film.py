@@ -34,6 +34,9 @@ def encode_works(works):
     titles = [work["title"] for work in works]
     synopses = [work["synopsis"] for work in works]
 
+    for work in works:
+        work["genres"] = work["genres"].split(", ")
+
     # Encodage par lot (batch processing)
     encoded_titles = model.encode(
         titles, batch_size=32, device="cuda", convert_to_numpy=True
