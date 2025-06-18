@@ -37,6 +37,7 @@ def chat():
 
     userMessage = request.json.get("message")
     id = request.json.get("id")
+    model = request.json.get("model")
 
     new_message = Message(id_conversation=id, content=userMessage)
     session.add(new_message)
@@ -81,10 +82,10 @@ def chat():
         session.commit()
 
     if is_about_reco:
-        response = create_answer(prompt, works)
+        response = create_answer(prompt, works, model)
     else:
         response = ollama.chat(
-            model="DWWM", stream=False, messages=[prompt], options={"temperature": 0.3}
+            model="model", stream=False, messages=[prompt], options={"temperature": 0.3}
         )
         response = response["message"]["content"]
 
@@ -110,9 +111,11 @@ def login():
 
     password_hashed = password.encode("utf-8")
     account = session.query(Account).filter_by(email=email).first()
+    print(bcrypt.checkpw(password_hashed, account.password.encode("utf-8")))
     if account and bcrypt.checkpw(password_hashed, account.password.encode("utf-8")):
         return get_logged(account)
     else:
+        print('fdopsdfop')
         return jsonify({"error": "Invalid credentials"}), 401
 
 
@@ -127,6 +130,7 @@ def get_logged(account):
     }
 
     token = jwt.encode(payload, os.getenv("HASH_KEY"), algorithm="HS256")
+    print(f"Token: {token}")
     return jsonify({"token": token}), 200
 
 

@@ -153,18 +153,15 @@
 
     <!-- Chat container for user messages and AI responses -->
     <div class="chat-container">
-        <!-- Top menu with links -->
-        <div class="menu-container">
-            <div class="menu" id="menu">
-                <a href="login.html">Log in</a>
-                <a href="#">Change IA</a>
-            </div>
-        </div>
         <!-- Box to display conversation -->
         <div id="chat-box"></div>
         <!-- Input box to send messages -->
         <div id="sendbox">
             <input type="text" id="user-input" placeholder="Écrivez un message...">
+            <select id="dropdown">
+                <option value="DWWM">Qwen</option>
+                <option value="DWWM_2">LLama</option>
+            </select>
             <button id="sendButton" onclick="sendMessage()">✓</button>
         </div>
     </div>

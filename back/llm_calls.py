@@ -25,8 +25,9 @@ Réponds "oui" si l'utilisateur demande une recommendation d'un anime, d'un film
     response = ollama.chat(
         model="DWWM",
         stream=False,
-        messages=[metaprompt, prompt]    
-        )
+        messages=[metaprompt, prompt] ,
+        options={"temperature": 0},   
+    )
 
     print(response["message"]["content"])
     return response["message"]["content"]
@@ -56,33 +57,36 @@ Ne déduit jamais l'oeuvre recherché.
 La réponse doit être un JSON parfaitement valide, ne l'entoure jamais de ceci \"json'''.....'''\".
 Ce JSON sera composé d'un, deux ou trois critères uniquement si pertinents.
 ***Critères :
- - \"title\": str(Titre de l'œuvre recherché)
- - \"format\": str (le type d'oeuvres : anime, série, film)
- - \"genres\": list[str] (les genres de l'œuvre en minuscule, par exemple : action, comédie, drame, etc.)
- - \"key_words\": list[str] (tous les mots clés clairement identifiés)
+ - \"title\": str (Nom de l'œuvre audiovisuelle recherché)
+ - \"format\": str (Type d'oeuvre)
+ - \"genres\": list[str] (Genre de l'oeuvre)
+ - \"key_words\": list[str] (tous les mots clés clairement identifiés qui ne sont pas des titres d'oeuvres, des formats ou des genres)
 
+Les formats possibles sont : anime, série, film.
 Les genres possibles sont : {', '.join(GENRES)}.
-Ne détermine \"title\" et \"genre\" que si l'utilisateur le demande explicitement.""",
+
+Ne détermine \"title\" que si l'utilisateur le demande explicitement.""",
     }
     response = ollama.chat(
         model="DWWM",
         stream=False,
-        messages=[metaprompt, prompt]
+        messages=[metaprompt, prompt],
+        options={"temperature": 0},
     )
     print(response["message"]["content"])
     return response["message"]["content"]
 
 
 def create_answer(
-    prompt, hits
+    prompt, hits, model
 ):  # - \"ranking\": float (entre 0 et 1)\n- \"genres\": list[str]\n- \"episodes\": int (nombre d'épisodes total)\n- \"status\": str\n- (étape de publication : en cours, terminé, etc...)
     metaprompt = {
         "role": "system",
-        "content": f"""L'utilisateur recherche une recommendation d'oeuvres audiovisuelles, et cette liste de d'oeuvres lui est présentée : "{[hit["title"] for hit in hits]}"
-Répondez en présentant quelques éléments en y apportant quelques informations sans en inventer et en 70 mots maximum.""",
+        "content": f"""L'utilisateur recherche une recommendation d'oeuvres audiovisuelles, et cette liste de d'oeuvres lui est présentée : "{[hit["title"] for hit in hits[:5]]}"
+Répondez à son prompt en présentant 2 éléments en y apportant quelques informations sans en inventer et en 70 mots maximum.""",
     }
     response = ollama.chat(
-        model="DWWM",
+        model=model,
         stream=False,
         messages=[metaprompt, prompt],
         options={"temperature": 0.3},

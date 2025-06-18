@@ -276,6 +276,7 @@ async function getBotResponse(input) {
         const params = new URLSearchParams(window.location.search);
         const conversationId = params.get("conversation");
         const token = localStorage.getItem("authToken")
+        const model = document.getElementById("dropdown").value
 
         const response = await fetch('http://localhost:5000/chat', {
             method: 'POST',
@@ -286,7 +287,8 @@ async function getBotResponse(input) {
             },
             body: JSON.stringify({
                 message: input,
-                id: conversationId
+                id: conversationId,
+                model: model,
             }),
             mode: "cors"
         });
@@ -558,6 +560,7 @@ function addGenre() {
             id = response.id
             console.log("id",id)
             addGenreButton(id, genreInput.value)
+            genreInput.value = ""
         }
     })
     .catch(error => {
@@ -620,4 +623,5 @@ function addGenreButton(id_genre, name_genre) {
     genreDiv.appendChild(supprGenreButton);
     threeGenresDiv.appendChild(genreDiv);
     listGenres.appendChild(threeGenresDiv);
+
 }

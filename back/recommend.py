@@ -33,6 +33,7 @@ def searchWorks(criterias):
         with_vectors=True,
         limit=50,
     )
+    print(f"Hits: {len(hits.points)}")
     for hit in hits.points:
         score = hit.score  # Remplacez 'score' par l'attribut correct si nécessaire
         print(f"Point: {hit.payload["genres"]}, Score: {score}")
@@ -71,7 +72,7 @@ def create_prefetch(criterias):
     if format:
         filters.append(
             models.FieldCondition(
-                key="format", match=models.MatchValue(value=format)  # , boost=2.0
+                key="format", match=models.MatchValue(value=format.lower())  # , boost=2.0
             )
         )
 
@@ -81,7 +82,7 @@ def create_prefetch(criterias):
         filters.extend([
             models.FieldCondition(
                 key="genres", 
-                match=models.MatchValue(value=genre.strip())  # , boost=2.0
+                match=models.MatchValue(value=genre.strip().lower())  # , boost=2.0
             ) for genre in genres
         ])
     if filters:
