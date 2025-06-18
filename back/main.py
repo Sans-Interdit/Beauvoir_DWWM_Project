@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import ollama
 import json
-from .llm_calls import determine_prompt_type, determine_criterias
+from .llm_calls import determine_prompt_type, determine_criterias, create_answer
 from datas.models import Account, session, Conversation, Message, Recommendation, Genre
 from .recommend import searchWorks
 import os
@@ -19,6 +19,9 @@ CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
 if __name__ == "__main__":
     app.run(debug=True)
 
+GENRES = ["supernatural", "suspense", "slice of life", 'gourmet', 'avant Garde', 'action', 'Science Fiction', 'adventure',
+       'drama', 'crime', 'thriller', 'fantasy', 'comedy', 'romance', 'western', 'mystery', 'war',
+       'family', 'horror', 'music', 'history', 'documentary']
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -41,7 +44,7 @@ def chat():
 
     works = None
 
-    prompt = {"role": "user", "content": userMessage+"/no_think"}
+    prompt = {"role": "user", "content": userMessage}
 
     is_about_reco = (
         determine_prompt_type(prompt).lower() == "oui"
@@ -57,16 +60,33 @@ def chat():
                 jsonify({"error": "Error in determine_criterias. Invalid JSON format"}),
                 400,
             )
-
+        genres = criterias.get("genres")
+        if genres:
+            criterias["genres"] = [genre for genre in criterias["genres"] if genre in GENRES]
+        else:
+            token = request.headers.get("Authorisation")
+            if token:
+                try:
+                    data = jwt.decode(token, os.getenv("HASH_KEY"), algorithms=["HS256"])
+                except jwt.ExpiredSignatureError:
+                    data = None                
+                except jwt.InvalidTokenError:
+                    data = None
+                if data:
+                    account = session.query(Account).filter_by(id_account=data["id"]).first()
+                    criterias["genres"] = [genre.name for genre in account.genres]
         works = searchWorks(criterias)  # Get the 50 best recommendations from the Qdrant database using the criterias
         # print(works)
         conv.recommendation.oeuvres = works
+        session.commit()
 
-    response = ollama.chat(
-        model="DWWM", stream=False, messages=[prompt], options={"temperature": 0.3}
-    )
-
-    response = response["message"]["content"]
+    if is_about_reco:
+        response = create_answer(prompt, works)
+    else:
+        response = ollama.chat(
+            model="DWWM", stream=False, messages=[prompt], options={"temperature": 0.3}
+        )
+        response = response["message"]["content"]
 
     new_message = Message(id_conversation=id, content=response)
     session.add(new_message)
@@ -263,6 +283,8 @@ def getinfos():
     account = session.query(Account).filter_by(id_account=request.user_id).first()
     genres = {e.id_genre : e.name for e in account.genres}
     if account:
+        # for e in account.conversations[4].messages:
+        #     print(e.content)
         return (
             jsonify(
                 {

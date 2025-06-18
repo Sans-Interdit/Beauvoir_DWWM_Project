@@ -35,7 +35,7 @@ def encode_works(works):
     synopses = [work["synopsis"] for work in works]
 
     for work in works:
-        work["genres"] = work["genres"].split(", ")
+        work["genres"] = [genre.lower() for genre in work["genres"].split(", ")]
 
     # Encodage par lot (batch processing)
     encoded_titles = model.encode(
@@ -56,34 +56,6 @@ def encode_works(works):
     ]
 
     return encoded_works
-
-
-def remove_outdated_offers(valid_ids):
-    """Supprime les offres de la base vectorielle qui ne sont plus valides."""
-    try:
-        # Récupérer tous les IDs dans la base vectorielle
-        result = client.scroll(collection_name=COLLECTION_NAME, limit=None)
-        
-        if isinstance(result, tuple):
-            records = result[0]  # on extrait la liste des Record si elle est dans un tuple
-        else:
-            records = result  # sinon c'est déjà une liste
-
-        db_ids = {record.id for record in records}
-
-        # Identifier les IDs obsolètes
-        outdated_ids = list(db_ids - set(valid_ids))
-        print(outdated_ids)
-        if not outdated_ids:
-            print("Aucune offre obsolète à supprimer.")
-            return
-
-        # Supprimer les points obsolètes
-        response = client.delete(collection_name=COLLECTION_NAME, ids=outdated_ids)
-        print(f"Offres obsolètes supprimées : {len(outdated_ids)}")
-
-    except Exception as e:
-        print(f"Erreur lors de la suppression des offres obsolètes : {e}")
 
 if __name__ == "__main__":
     create_collection()

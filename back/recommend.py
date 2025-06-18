@@ -6,7 +6,7 @@ client = QdrantClient(
     url="http://localhost:6333",
     api_key="test",
 )
-COLLECTION_NAME = "all_works"
+COLLECTION_NAME = "all-works"
 model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
 model.to("cuda")
 
@@ -19,7 +19,7 @@ def searchWorks(criterias):
     Uses vector similarity to retrieve the most relevant results.
 
     Args:
-        criterias (dict): A dictionary with criteria such as 'key_words', 'title', or 'format'.
+        criterias (dict): A dictionary with criteria such as 'key_words', 'title', 'genres', or 'format'.
 
     Returns:
         list: A list of result payloads (matching works).
@@ -35,7 +35,7 @@ def searchWorks(criterias):
     )
     for hit in hits.points:
         score = hit.score  # Remplacez 'score' par l'attribut correct si nécessaire
-        print(f"Point: {hit.payload["title"]}, Score: {score}")
+        print(f"Point: {hit.payload["genres"]}, Score: {score}")
     results = [point.payload for point in hits.points]
 
     return results
@@ -75,16 +75,17 @@ def create_prefetch(criterias):
             )
         )
 
-    genres = criterias.get("genre")
+    genres = criterias.get("genres")
+    print(f"Genres: {genres}")
     if genres:
         filters.extend([
             models.FieldCondition(
-                key="genres", match=models.MatchValue(value=genre.strip())  # , boost=2.0
+                key="genres", 
+                match=models.MatchValue(value=genre.strip())  # , boost=2.0
             ) for genre in genres
         ])
-
     if filters:
-        filter_value = models.Filter(should=filters)
+        filter_value = models.Filter(must=filters)
     else:
         filter_value = None
 
@@ -100,12 +101,8 @@ def create_prefetch(criterias):
 
     if not criteria_vectors:
         return models.Prefetch(filter=filter_value, limit=50)
-    elif not filter_value:
-        return [
-            models.Prefetch(query=vector_value, using=vector_name, limit=50)
-            for vector_name, vector_value in criteria_vectors.items()
-        ]
     else:
+        print(filter_value)
         return [
             models.Prefetch(
                 query=vector_value, using=vector_name, filter=filter_value, limit=50

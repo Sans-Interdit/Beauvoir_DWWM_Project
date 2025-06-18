@@ -79,10 +79,10 @@ if __name__ == "__main__":
     import numpy as np
 
     client = QdrantClient(
-        url="http://157.173.120.0:6333",
-        api_key="Tm7oI7DnOI7YYsKqvpIbbjwmONHEGzFY9ozQGo0j8HKqEgV3ZidIFvUvZYLnscZJ",
+        url="http://localhost:6333",
+        api_key="test",
     )
-    COLLECTION_NAME = "All_Paris_jobs"
+    COLLECTION_NAME = "all-works"
     model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
     model.to("cuda")
 
@@ -140,26 +140,29 @@ if __name__ == "__main__":
         #     "genre": ["Documentary", "Science Fiction"]
         # }
 
-        filter_value = []
+        filters = []
 
         format = criterias.get("format")
         if format:
-            filter_value = models.Filter(
-                should=[
-                    models.FieldCondition(
-                        key="format", match=models.MatchValue(value=format)  # , boost=2.0
-                    )
-                ]
+            filters.append(
+                models.FieldCondition(
+                    key="format", match=models.MatchValue(value=format)  # , boost=2.0
+                )
             )
-        genres = criterias.get("genre")
+
+        genres = criterias.get("genres")
+        print(f"Genres: {genres}")
         if genres:
-            filter_value = models.Filter(
-                should=[
-                    models.FieldCondition(
-                        key="genres", match=models.MatchValue(value=genre.strip())  # , boost=2.0
-                    ) for genre in genres
-                ]
-            )
+            filters.extend([
+                models.FieldCondition(
+                    key="genres", 
+                    match=models.MatchValue(value=genre.strip())  # , boost=2.0
+                ) for genre in genres
+            ])
+        if filters:
+            filter_value = models.Filter(must=filters)
+        else:
+            filter_value = None
 
 
         criteria_vectors = {}
@@ -172,21 +175,21 @@ if __name__ == "__main__":
                     criteria_vectors[possible_field] = model.encode(field)
 
         if not criteria_vectors:
-            return models.Prefetch(filter=None, limit=50)
-        elif not filter_value:
-            return [
-                models.Prefetch(query=vector_value, using=vector_name, limit=50)
-                for vector_name, vector_value in criteria_vectors.items()
-            ]
+            print("popopopopopopopopopopopopopopopopopopo")
+            return models.Prefetch(filter=filter_value, limit=50)
         else:
+            print(filter_value)
             return [
                 models.Prefetch(
-                    query=vector_value, using=vector_name, filter=None, limit=50
+                    query=vector_value, using=vector_name, filter=filter_value, limit=50
                 )
                 for vector_name, vector_value in criteria_vectors.items()
             ]
+
     print(searchWorks({
-            "job_title": ["job dans la data"],
+          "format": "film",
+          "genres": ["romance"],
+          "key_words": ["étudiants"]
         }))
 
     

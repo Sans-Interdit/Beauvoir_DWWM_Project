@@ -275,12 +275,14 @@ async function getBotResponse(input) {
     try {
         const params = new URLSearchParams(window.location.search);
         const conversationId = params.get("conversation");
+        const token = localStorage.getItem("authToken")
 
         const response = await fetch('http://localhost:5000/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-API-KEY': CONFIG.API_KEY,
+                'Authorisation': token,
             },
             body: JSON.stringify({
                 message: input,
