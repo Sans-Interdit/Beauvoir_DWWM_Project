@@ -19,6 +19,7 @@ CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
 if __name__ == "__main__":
     app.run(debug=True)
 
+# List of valid genres for content filtering
 GENRES = ["supernatural", "suspense", "slice of life", 'gourmet', 'avant Garde', 'action', 'Science Fiction', 'adventure',
        'drama', 'crime', 'thriller', 'fantasy', 'comedy', 'romance', 'western', 'mystery', 'war',
        'family', 'horror', 'music', 'history', 'documentary']
@@ -30,15 +31,17 @@ def chat():
     Checks the API key, stores the message, determines if it's a recommendation request,
     retrieves recommendations if needed, and generates a response via Ollama.
     """
+    # Validate API key for security
     api_key_send = request.headers.get("X-API-KEY")
-    print(api_key_send, os.getenv("API_KEY"))
     if api_key_send != os.getenv("API_KEY"):
         return jsonify({"error": "Unauthorized access"}), 401
 
+    # Extract request data
     userMessage = request.json.get("message")
     id = request.json.get("id")
     model = request.json.get("model")
 
+    # Store user message in database
     new_message = Message(id_conversation=id, content=userMessage)
     session.add(new_message)
     session.commit()
@@ -47,6 +50,7 @@ def chat():
 
     prompt = {"role": "user", "content": userMessage}
 
+    # Check if user is asking for recommendations
     is_about_reco = (
         determine_prompt_type(prompt).lower() == "oui"
     )  # == Does the user want a recommendation ?
@@ -61,10 +65,13 @@ def chat():
                 jsonify({"error": "Error in determine_criterias. Invalid JSON format"}),
                 400,
             )
+        
+        # Filter genres to only include valid ones
         genres = criterias.get("genres")
         if genres:
             criterias["genres"] = [genre for genre in criterias["genres"] if genre in GENRES]
         else:
+            # If no genres specified, use user's preferred genres from profile
             token = request.headers.get("Authorisation")
             if token:
                 try:
@@ -76,11 +83,13 @@ def chat():
                 if data:
                     account = session.query(Account).filter_by(id_account=data["id"]).first()
                     criterias["genres"] = [genre.name for genre in account.genres]
+        
+        # Search for works based on criteria
         works = searchWorks(criterias)  # Get the 50 best recommendations from the Qdrant database using the criterias
-        # print(works)
         conv.recommendation.oeuvres = works
         session.commit()
 
+    # Generate response based on whether it's a recommendation or general chat
     if is_about_reco:
         response = create_answer(prompt, works, model)
     else:
@@ -89,6 +98,7 @@ def chat():
         )
         response = response["message"]["content"]
 
+    # Store bot response in database
     new_message = Message(id_conversation=id, content=response)
     session.add(new_message)
     session.commit()
@@ -102,6 +112,7 @@ def login():
     Authenticates a user using their email and password.
     Returns a JWT token if the credentials are valid.
     """
+    # Validate API key
     api_key_send = request.headers.get("X-API-KEY")
     if api_key_send != os.getenv("API_KEY"):
         return jsonify({"error": "Unauthorized access"}), 401
@@ -109,13 +120,12 @@ def login():
     email = request.json.get("email")
     password = request.json.get("password")
 
+    # Verify password against stored hash
     password_hashed = password.encode("utf-8")
     account = session.query(Account).filter_by(email=email).first()
-    print(bcrypt.checkpw(password_hashed, account.password.encode("utf-8")))
     if account and bcrypt.checkpw(password_hashed, account.password.encode("utf-8")):
         return get_logged(account)
     else:
-        print('fdopsdfop')
         return jsonify({"error": "Invalid credentials"}), 401
 
 
@@ -123,6 +133,7 @@ def get_logged(account):
     """
     Generates a JWT token for an authenticated user account.
     """
+    # Create JWT payload with expiration time
     payload = {
         "id": account.id_account,
         "email": account.email,
@@ -130,7 +141,6 @@ def get_logged(account):
     }
 
     token = jwt.encode(payload, os.getenv("HASH_KEY"), algorithm="HS256")
-    print(f"Token: {token}")
     return jsonify({"token": token}), 200
 
 
@@ -146,15 +156,17 @@ def register():
     country = request.json.get("country")
     gender = request.json.get("gender")
     try:
+        # Check if email is already registered
         account = session.query(Account).filter_by(email=email).first()
         if account:
-            print("Email already used")
             return jsonify({"message": "Email already used"}), 400
 
+        # Hash password for secure storage
         hashed_password = bcrypt.hashpw(
             password.encode("utf-8"), bcrypt.gensalt()
         ).decode("utf-8")
 
+        # Create new account
         new_account = Account(
             email=email,
             password=hashed_password,
@@ -175,15 +187,16 @@ def token_required(f):
     Decorator that requires JWT authentication.
     Validates the token and checks for expiration.
     """
-    print("token")
 
     @wraps(f)
     def decorated(*args, **kwargs):
+        # Extract and validate JWT token
         token = request.headers.get("Authorisation")
         if not token:
             return jsonify({"error": "Token is missing"}), 401
 
         try:
+            # Decode and validate token
             data = jwt.decode(token, os.getenv("HASH_KEY"), algorithms=["HS256"])
             request.user_id = data["id"]
         except jwt.ExpiredSignatureError:
@@ -202,6 +215,7 @@ def historic():
     """
     Retrieves the conversation history of an authenticated user.
     """
+    # Get user account and return conversation history
     account = session.query(Account).filter_by(id_account=request.user_id).first()
     conversations = [conv.to_dict() for conv in account.conversations]
     return jsonify({"data": conversations}), 200
@@ -213,21 +227,26 @@ def newConv():
     """
     Creates a new conversation for an authenticated user.
     """
+    # Retrieve the authenticated user's account
     account = session.query(Account).filter_by(id_account=request.user_id).first()
 
+    # Determine the new conversation number based on existing ones
     nbr = len(account.conversations) + 1
+    # Create a new Conversation instance with a default name
     new_conversation = Conversation(
         name=f"Conversation {nbr}", id_account=account.id_account
     )
     session.add(new_conversation)
     session.commit()
 
+    # Initialize an empty Recommendation linked to the new conversation
     new_recommendation = Recommendation(
         id_conversation=new_conversation.id_conversation, oeuvres=[]
     )
     session.add(new_recommendation)
     session.commit()
 
+    # Add a default welcome message to the conversation
     new_message = Message(
         id_conversation=new_conversation.id_conversation,
         content="Bonjour, comment puis-je vous aider aujourd'hui?",
@@ -235,12 +254,13 @@ def newConv():
     session.add(new_message)
     session.commit()
 
+    # Retrieve the conversation to confirm recommendation was linked correctly
     a = (
         session.query(Conversation)
         .filter_by(id_conversation=new_conversation.id_conversation)
         .first()
     )
-    print(a.recommendation)
+    # Return the new conversation ID to the client
     return jsonify({"id": new_conversation.id_conversation}), 200
 
 
@@ -250,14 +270,18 @@ def suppressconv():
     """
     Deletes a conversation for an authenticated user.
     """
-    id = request.json.get("id")
-    conversation = session.query(Conversation).filter_by(id_conversation=id).first()
+    # Extract conversation ID from request body
+    conv_id = request.json.get("id")
+    # Fetch the conversation from the database
+    conversation = session.query(Conversation).filter_by(id_conversation=conv_id).first()
 
+    # Only allow deletion if the conversation belongs to the user
     if conversation and conversation.id_account == request.user_id:
         session.delete(conversation)
         session.commit()
         return jsonify({"message": "Conversation suppressed"}), 200
 
+    # Return error if conversation not found or unauthorized
     return jsonify({"error": "Conversation not found or access refused"}), 404
 
 
@@ -267,14 +291,15 @@ def suppressacc():
     """
     Deletes an authenticated user's account.
     """
-    id = request.user_id
-
-    account = session.query(Account).filter_by(id_account=id).first()
+    user_id = request.user_id
+    # Fetch the user's account
+    account = session.query(Account).filter_by(id_account=user_id).first()
     if account:
         session.delete(account)
         session.commit()
         return jsonify({"message": "Account suppressed"}), 200
 
+    # Return error if account not found
     return jsonify({"error": "Account not found or access refused"}), 404
 
 
@@ -284,11 +309,12 @@ def getinfos():
     """
     Retrieves information about an authenticated user.
     """
+    # Fetch the user's account
     account = session.query(Account).filter_by(id_account=request.user_id).first()
-    genres = {e.id_genre : e.name for e in account.genres}
     if account:
-        # for e in account.conversations[4].messages:
-        #     print(e.content)
+        # Convert user's preferred genres into a dict of id -> name
+        genres = {e.id_genre: e.name for e in account.genres}
+        # Return user profile details as JSON
         return (
             jsonify(
                 {
@@ -302,6 +328,7 @@ def getinfos():
             200,
         )
     else:
+        # User not found in database
         return jsonify({"error": "User not found"}), 404
 
 
@@ -311,20 +338,21 @@ def addgenre():
     """
     Adds a genre for an authenticated user.
     """
-    id = request.user_id
-    genre = request.json.get("genre")
-    print(genre)
-    account = session.query(Account).filter_by(id_account=id).first()
+    user_id = request.user_id
+    genre_name = request.json.get("genre")
+    # Fetch user account
+    account = session.query(Account).filter_by(id_account=user_id).first()
     if not account:
-        print("Account not found")
         return jsonify({"error": "User not found"}), 404
+
+    # List all existing genres (for debugging)
     all_genres = session.query(Genre.name).all()
-    print([g[0] for g in all_genres])
-    genre = session.query(Genre).filter_by(name=genre).first()
+    # Find the requested genre by name
+    genre = session.query(Genre).filter_by(name=genre_name).first()
     if not genre:
-        print("Genre not found")
         return jsonify({"error": "Genre not found"}), 404
 
+    # Associate genre with user if not already linked
     if genre not in account.genres:
         account.genres.append(genre)
         session.commit()
@@ -333,6 +361,7 @@ def addgenre():
             201,
         )
     else:
+        # Inform client that genre was already associated
         return jsonify({"message": "Genre already associated with user"}), 200
 
 
@@ -342,19 +371,20 @@ def suppressgenre():
     """
     Deletes a genre for an authenticated user.
     """
-    id = request.user_id
-    id_genre = request.json.get("id")
-    account = session.query(Account).filter_by(id_account=id).first()
-    genre = session.query(Genre).filter_by(id_genre=id_genre).first()
-    print(id_genre, genre)
+    user_id = request.user_id
+    genre_id = request.json.get("id")
+    # Fetch user account and genre record
+    account = session.query(Account).filter_by(id_account=user_id).first()
+    genre = session.query(Genre).filter_by(id_genre=genre_id).first()
+
+    # Validate user and genre existence
     if not account or not genre:
         return jsonify({"error": "User not found"}), 404
-    
+    # Remove association if present
     if genre in account.genres:
-        account.genres.remove(genre)  # supprime l'association
+        account.genres.remove(genre)
         session.commit()
         return jsonify({"message": "Genre removed from user"}), 200
-    
     else:
+        # Cannot remove a genre not linked to user
         return jsonify({"error": "Genre not associated with user"}), 404
-

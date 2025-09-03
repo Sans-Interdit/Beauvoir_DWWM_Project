@@ -27,14 +27,6 @@ class Account(Base):
     )
     genres = relationship("Genre", secondary="account_genre", back_populates="accounts")
 
-
-# class AccountGenre(Base):
-#     __tablename__ = "account_genre"
-
-#     id_account = Column(Integer, ForeignKey("account.id_account"), primary_key=True)
-#     id_genre = Column(Integer, ForeignKey("genre.id_genre"), primary_key=True)
-
-
 class Genre(Base):
     __tablename__ = "genre"
 
