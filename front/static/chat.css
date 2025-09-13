@@ -1,0 +1,392 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    background-color: #1a1a1a;
+    margin: 0;
+}
+
+#histo-box {
+    margin-left: 10px;
+    margin-right: 2%;
+    height: 90%;
+    width: 20%;
+    background: #403B36;
+    padding: 2%;
+    border-radius: 3%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-container {
+    height: 90%;
+    width: 50%;
+    background: #403B36;
+    padding: 2%;
+    border-radius: 3%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-box {
+    height: 120%;
+    overflow-y: auto;
+    border-bottom: 3px solid #A259FF;
+    padding-bottom: 5%;
+    display: flex;
+    flex-direction: column;
+    padding: 2%;
+}
+
+.message {
+    padding: 8px;
+    border-radius: 5px;
+    margin: 5px 0;
+    max-width: 80%;
+}
+
+.bot {
+    background: #A259FF;
+    color: #FFFFFF;
+    align-self: flex-start;
+}
+
+.user {
+    background: #FF9F1C;
+    color: #FFFFFF;
+    align-self: flex-end;
+    text-align: right;
+}
+
+#user-input {
+    width: 70%;
+    padding: 3%;
+    border: 2px solid #A259FF;
+    border-radius: 5px;
+    align-self: center;
+    background-color: #1a1a1a;
+    color: white;
+}
+#user-input:focus {
+    outline: none;
+    border-color: #ff9900;
+}
+
+#sendButton {
+    width: 9%;
+    margin-left: 2%;
+    font-size: clamp(12px, 2vw, 20px);
+    border: 2px solid #A259FF;
+    border-radius: 5px;
+    align-self: center;
+    background: #FF9F1C;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    aspect-ratio: 1;
+}
+
+#sendbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 15%;
+}
+
+#reco-box {
+    margin-right: 10px;
+    margin-left: 2%;
+    height: 90%;
+    width: 30%;
+    background: #403B36;
+    padding: 2%;
+    border-radius: 3%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.reco {
+    padding: 8px;
+    border-radius: 5px;
+    margin: 5px 0;
+    width: 80%;
+    background: #A259FF;
+    color: #FFFFFF;
+    align-self: center;
+    text-align: center;
+}
+
+/* Personnalisation de la barre de défilement */
+::-webkit-scrollbar {
+    width: 5px; /* Largeur de la scrollbar */
+}
+
+/* Personnalisation de la partie déplaçable de la scrollbar (thumb) */
+::-webkit-scrollbar-thumb {
+    background-color: #FF9F1C; /* Couleur du thumb */
+    border-radius: 10px; /* Bord arrondi */
+}
+
+/* Personnalisation de la piste de la scrollbar */
+::-webkit-scrollbar-track {
+    background: #f1f1f100; /* Couleur de la piste */
+}
+
+
+.menu-container {
+    position: fixed;
+}
+
+.menu {
+    position: flex; /* Position indépendante de tout */
+    background-color: #FF9F1C;
+    min-width: 150px;
+    border: 3px solid #A259FF;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: none; /* Caché par défaut */
+}
+
+.menu a {
+    display: block;
+    padding: 8px;
+    text-decoration: none;
+    color: black;
+    border-bottom: 1px solid #A259FF;
+}
+
+.menu a:hover {
+    background-color: #A259FF;
+}
+
+.show {
+    display: block;
+}
+
+#optionButton {
+    position: fixed;
+    background-color: #FF9F1C;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.sidebar {
+    width: 33%;
+    min-width: 300Qpx;
+    height: 100vh;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 5.9%;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 1;
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+  /* La barre est cachée (hors écran) lorsqu'elle a la classe "closed" */
+.sidebar.closed {
+    transform: translateX(-100%);
+}
+  /* Bouton pour ouvrir/fermer la barre */
+.menu-button {
+    background-color: #333;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10%;
+    margin-top: 10%;
+    aspect-ratio: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-button img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.all-buttons {
+    flex-direction: column;
+    display: flex;
+    height: 100%;
+    width: 6%;
+    min-width: 50px;
+    margin-right: 2%;
+    z-index: 2;
+    background-color: #333;
+    align-items: center;
+}
+
+.up{
+    display: flex;
+    justify-content: start;
+    flex-direction: column;
+    height: 50%;
+}
+
+.down{
+    display: flex;
+    justify-content: end;
+    flex-direction: column;
+    height: 50%;
+}
+
+.input-login {
+    width: 70%;
+    padding: 10px;
+    margin: 5%;
+    border: 1px solid #FF9F1C;
+    border-radius: 5px;
+}
+
+.button {
+    width: 40%;
+    padding: 10px;
+    background: #FF9F1C;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 5%;
+}
+
+.toggle {
+    margin-top: 10px;
+    color: rgb(206, 123, 0);
+    cursor: pointer;
+}
+
+#auth-div {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+}
+
+.button-conv {
+    width: 60%;
+    padding: 10px;
+    background: #FF9F1C;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 25px;
+    margin: 2%;
+}
+
+.CGU-container {
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    width: 91%;
+}
+h1 {
+    color: #FF9F1C;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+    width: 100%;
+}
+h2 {
+    color: #A259FF;
+    margin-top: 20px;
+}
+h3 {
+    font-size: clamp(12px, 2vw, 20px);
+    margin: 5px;
+    text-align: center;
+    width: 100px;
+    color: #FFFFFF;
+}
+p {
+    margin-bottom: 15px;
+}
+
+.suppr-conv {
+    background-color: red;
+    border-radius: 15px;
+    height: 70%;
+    aspect-ratio: 1;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.simple-div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox-div {
+    margin-top: 4%;
+}
+
+.genre-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 145px;
+    height: 40px;
+    background-color: #A259FF;
+    border-radius: 15px;
+    margin: 3px;
+    margin-bottom: 10px;
+}
+
+.top-bar {
+    border-top: 2px solid #ecf0f1;
+    width: 100%;
+}
+
+.three-genres-div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+a {
+    color: #FF5733; /* Couleur orange par exemple */
+}
+
+#dropdown {
+    margin-left: 2%;
+    justify-content: center;
+    padding: 10px 8px;
+    border: 2px solid #a259ff;
+    background-color: #1a1a1a;
+    color: #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    appearance: none;
+    cursor: pointer;
+}
+
+/* pour flèche personnalisée (optionnel) */
+#dropdown::-ms-expand {
+    display: none;
+}
+#dropdown:focus {
+    outline: none;
+    border-color: #ff9900;
+}

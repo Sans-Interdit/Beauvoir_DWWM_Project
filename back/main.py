@@ -1,8 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import ollama
 import json
-from .llm_calls import determine_prompt_type, determine_criterias, create_answer
+from .llm_calls import determine_prompt_type, determine_criterias, create_answer, client
 from datas.models import Account, session, Conversation, Message, Recommendation, Genre
 from .recommend import searchWorks
 import os
@@ -14,15 +13,27 @@ from functools import wraps
 
 load_dotenv()
 
-app = Flask("Beauvoir_DWWM_Project")
-CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
-if __name__ == "__main__":
-    app.run(debug=True)
-
 # List of valid genres for content filtering
 GENRES = ["supernatural", "suspense", "slice of life", 'gourmet', 'avant Garde', 'action', 'Science Fiction', 'adventure',
        'drama', 'crime', 'thriller', 'fantasy', 'comedy', 'romance', 'western', 'mystery', 'war',
        'family', 'horror', 'music', 'history', 'documentary']
+
+app = Flask(__name__)
+
+# Servir tout le dossier "front"
+@app.route('/front/<path:filename>')
+def serve_front(filename):
+    return send_from_directory('../front', filename)
+
+# Rediriger / vers ta page de chat (optionnel)
+@app.route('/')
+def index():
+    return send_from_directory('../front/views', 'chat.html')
+
+CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -93,8 +104,8 @@ def chat():
     if is_about_reco:
         response = create_answer(prompt, works, model)
     else:
-        response = ollama.chat(
-            model="model", stream=False, messages=[prompt], options={"temperature": 0.3}
+        response = client.chat(
+            model=model, stream=False, messages=[prompt], options={"temperature": 0.3}
         )
         response = response["message"]["content"]
 
