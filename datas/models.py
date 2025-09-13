@@ -1,8 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, JSON, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql://postgres:test@127.0.0.1:5432/postgres"
+load_dotenv()
+DATABASE_URL = os.getenv("SQL_URL")
 
 Base = declarative_base()
 
