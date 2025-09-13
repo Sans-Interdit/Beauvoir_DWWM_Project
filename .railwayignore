@@ -1,0 +1,8 @@
+.venv
+back/__pycache__
+
+datas/__pycache__
+datas/anime_translated
+datas/film_translated_subset
+
+front/node_modules
