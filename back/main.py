@@ -20,12 +20,11 @@ GENRES = ["supernatural", "suspense", "slice of life", 'gourmet', 'avant Garde',
 
 app = Flask(__name__)
 
-# Servir tout le dossier "front"
+
 @app.route('/front/<path:filename>')
 def serve_front(filename):
     return send_from_directory('../front', filename)
 
-# Rediriger / vers ta page de chat (optionnel)
 @app.route('/')
 def index():
     return send_from_directory('../front/views', 'chat.html')
