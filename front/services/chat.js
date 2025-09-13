@@ -302,24 +302,24 @@ async function getBotResponse(input) {
 }
 
 
-function toggleMenu() {
-    document.getElementById("menu").classList.toggle("show");
-}
+// function toggleMenu() {
+//     document.getElementById("menu").classList.toggle("show");
+// }
 
 
 const CGUButton = document.getElementById('CGU-button');
 const infoButton = document.getElementById('info-button');
 
 document.addEventListener("click", function(event) { // Close sidebars when clicking outside
-    const menu = document.getElementById("menu");
+    // const menu = document.getElementById("menu");
     const button = document.querySelector("button");
     const loginButton = document.getElementById('login-button');
     const histoButton = document.getElementById('histo-button');
     const profileButton = document.getElementById('profile-button');
 
-    if (!menu.contains(event.target) && !button.contains(event.target)) {
-        menu.classList.remove("show");
-    }
+    // if (!menu.contains(event.target) && !button.contains(event.target)) {
+    //     menu.classList.remove("show");
+    // }
 
     if (loginButton && !sidebar_login.contains(event.target) && !loginButton.contains(event.target)) {
         sidebar_login.classList.add("closed");

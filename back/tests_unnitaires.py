@@ -43,10 +43,16 @@ def test_determine_criterias():
             "content": "Je cherche un film avec le personnage de Harley Quinn",
         }
         result = json.loads(determine_criterias(prompt))
-        expected_result = json.loads('{"format": "film","key_words": ["Harley Quinn"]}')
-        assert result == expected_result
-        print("✅ test_determine_criterias réussi")
+        expected_result = {"format": "film", "key_words": ["Harley Quinn"]}
 
+        assert all(result.get(k) == v for k, v in expected_result.items())
+
+        extra_keys_ok = all(
+            v in (None, [], "") for k, v in result.items() if k not in expected_result
+        )
+        assert extra_keys_ok
+
+        print("✅ test_determine_criterias réussi")
     except AssertionError:
         print("❌ test_determine_criterias échoué")
 

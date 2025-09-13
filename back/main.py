@@ -1,8 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import ollama
 import json
-from .llm_calls import determine_prompt_type, determine_criterias, create_answer
+from .llm_calls import determine_prompt_type, determine_criterias, create_answer, client
 from datas.models import Account, session, Conversation, Message, Recommendation, Genre
 from .recommend import searchWorks
 import os
@@ -34,6 +33,7 @@ def chat():
     # Validate API key for security
     api_key_send = request.headers.get("X-API-KEY")
     if api_key_send != os.getenv("API_KEY"):
+        print(api_key_send, "      ", os.getenv("API_KEY"))
         return jsonify({"error": "Unauthorized access"}), 401
 
     # Extract request data
@@ -93,8 +93,8 @@ def chat():
     if is_about_reco:
         response = create_answer(prompt, works, model)
     else:
-        response = ollama.chat(
-            model="model", stream=False, messages=[prompt], options={"temperature": 0.3}
+        response = client.chat(
+            model=model, stream=False, messages=[prompt], options={"temperature": 0.3}
         )
         response = response["message"]["content"]
 

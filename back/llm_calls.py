@@ -1,5 +1,9 @@
 import ollama
 
+client = ollama.Client(
+    host="http://192.168.1.31:11434"
+)
+
 # List of supported genres for recommendation criteria
 GENRES = [
     "supernatural", "suspense", "slice of life", "gourmet", "avant Garde",
@@ -31,7 +35,7 @@ def determine_prompt_type(prompt):
         ),
     }
     # Query the LLM and return its classification
-    response = ollama.chat(
+    response = client.chat(
         model="DWWM",
         stream=False,
         messages=[metaprompt, prompt],
@@ -67,7 +71,7 @@ def determine_criterias(prompt):
         ),
     }
     # Query the LLM for JSON-formatted criteria
-    response = ollama.chat(
+    response = client.chat(
         model="DWWM",
         stream=False,
         messages=[metaprompt, prompt],
@@ -101,7 +105,7 @@ def create_answer(prompt, hits, model):
         ),
     }
     # Query the LLM to generate the final answer
-    response = ollama.chat(
+    response = client.chat(
         model=model,
         stream=False,
         messages=[metaprompt, prompt],

@@ -4,14 +4,14 @@ import numpy as np
 
 # Initialize Qdrant client for vector similarity search
 client = QdrantClient(
-    url="http://localhost:6333",  # Qdrant service URL
+    url="http://192.168.1.31:6333",  # Qdrant service URL
     api_key="test",                # API key for authentication
 )
 COLLECTION_NAME = "all-works"  # Name of the Qdrant collection storing all works
 
 # Load multilingual sentence transformer model for vector encoding
 model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
-model.to("cuda")  # Move model to GPU for faster encoding
+# model.to("cuda")  # Move model to GPU for faster encoding
 
 
 def searchWorks(criterias):
