@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DATABASE_URL = os.getenv("SQL_URL")
-
+print("test",DATABASE_URL)
 Base = declarative_base()
 
 account_genre = Table(
